@@ -1,7 +1,7 @@
 #!/bin/sh
 # This is a generated file; do not edit or check into version control.
 export "FLUTTER_ROOT=/home/millz/flutter"
-export "FLUTTER_APPLICATION_PATH=/mnt/c/Users/millz/Desktop/crystal-grimoire-alpha-v1/crystal_grimoire_flutter"
+export "FLUTTER_APPLICATION_PATH=/mnt/c/Users/millz/Desktop/crystal-grimoire-ULTIMATE/crystal_grimoire_flutter"
 export "COCOAPODS_PARALLEL_CODE_SIGN=true"
 export "FLUTTER_TARGET=lib/main.dart"
 export "FLUTTER_BUILD_DIR=build"
