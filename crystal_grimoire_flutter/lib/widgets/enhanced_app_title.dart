@@ -1,0 +1,342 @@
+import 'package:flutter/material.dart';
+import 'dart:math' as math;
+import '../config/enhanced_theme.dart';
+import 'animations/enhanced_animations.dart';
+
+class EnhancedAppTitle extends StatefulWidget {
+  final double fontSize;
+  final bool showLogo;
+  
+  const EnhancedAppTitle({
+    Key? key,
+    this.fontSize = 42,
+    this.showLogo = true,
+  }) : super(key: key);
+
+  @override
+  State<EnhancedAppTitle> createState() => _EnhancedAppTitleState();
+}
+
+class _EnhancedAppTitleState extends State<EnhancedAppTitle>
+    with TickerProviderStateMixin {
+  late AnimationController _sparkleController;
+  late AnimationController _colorController;
+  late AnimationController _pulseController;
+  late Animation<double> _pulseAnimation;
+  late Animation<Color?> _colorAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    
+    // Sparkle animation
+    _sparkleController = AnimationController(
+      duration: const Duration(seconds: 3),
+      vsync: this,
+    )..repeat();
+    
+    // Color shift animation
+    _colorController = AnimationController(
+      duration: const Duration(seconds: 5),
+      vsync: this,
+    )..repeat(reverse: true);
+    
+    _colorAnimation = ColorTween(
+      begin: CrystalGrimoireTheme.etherealBlue,
+      end: CrystalGrimoireTheme.celestialGold,
+    ).animate(CurvedAnimation(
+      parent: _colorController,
+      curve: Curves.easeInOut,
+    ));
+    
+    // Pulse animation
+    _pulseController = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    )..repeat(reverse: true);
+    
+    _pulseAnimation = Tween<double>(
+      begin: 1.0,
+      end: 1.1,
+    ).animate(CurvedAnimation(
+      parent: _pulseController,
+      curve: Curves.easeInOut,
+    ));
+  }
+
+  @override
+  void dispose() {
+    _sparkleController.dispose();
+    _colorController.dispose();
+    _pulseController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // Animated title
+        AnimatedBuilder(
+          animation: Listenable.merge([_pulseAnimation, _colorAnimation]),
+          builder: (context, child) {
+            return Transform.scale(
+              scale: _pulseAnimation.value,
+              child: ShaderMask(
+                shaderCallback: (bounds) => LinearGradient(
+                  colors: [
+                    _colorAnimation.value!,
+                    CrystalGrimoireTheme.mysticPurple,
+                    CrystalGrimoireTheme.cosmicViolet,
+                    _colorAnimation.value!,
+                  ],
+                  stops: const [0.0, 0.3, 0.7, 1.0],
+                ).createShader(bounds),
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    // Glow effect
+                    Text(
+                      'Crystal Grimoire',
+                      style: TextStyle(
+                        fontSize: widget.fontSize,
+                        fontWeight: FontWeight.w900,
+                        fontFamily: 'Cinzel', // Mystical font
+                        letterSpacing: 3.0,
+                        foreground: Paint()
+                          ..style = PaintingStyle.stroke
+                          ..strokeWidth = 3
+                          ..color = Colors.white.withOpacity(0.3)
+                          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10),
+                      ),
+                    ),
+                    // Main text
+                    Text(
+                      'Crystal Grimoire',
+                      style: TextStyle(
+                        fontSize: widget.fontSize,
+                        fontWeight: FontWeight.w900,
+                        fontFamily: 'Cinzel',
+                        letterSpacing: 3.0,
+                        color: Colors.white,
+                        shadows: [
+                          Shadow(
+                            color: _colorAnimation.value!.withOpacity(0.5),
+                            blurRadius: 20,
+                            offset: const Offset(0, 2),
+                          ),
+                          const Shadow(
+                            color: CrystalGrimoireTheme.deepSpace,
+                            blurRadius: 10,
+                            offset: Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+        
+        if (widget.showLogo) ...[
+          const SizedBox(height: 12),
+          // Animated gemstone logo
+          _buildAnimatedGemstone(),
+        ],
+        
+        // Sparkle overlay
+        if (widget.showLogo)
+          Positioned.fill(
+            child: IgnorePointer(
+              child: AnimatedBuilder(
+                animation: _sparkleController,
+                builder: (context, child) {
+                  return CustomPaint(
+                    painter: SparklePainter(
+                      progress: _sparkleController.value,
+                      color: Colors.white,
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildAnimatedGemstone() {
+    return AnimatedBuilder(
+      animation: _sparkleController,
+      builder: (context, child) {
+        return Transform.rotate(
+          angle: _sparkleController.value * 2 * math.pi * 0.1,
+          child: Container(
+            width: 60,
+            height: 60,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: RadialGradient(
+                colors: [
+                  CrystalGrimoireTheme.etherealBlue.withOpacity(0.3),
+                  CrystalGrimoireTheme.amethyst.withOpacity(0.5),
+                  CrystalGrimoireTheme.cosmicViolet.withOpacity(0.7),
+                ],
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: CrystalGrimoireTheme.etherealBlue.withOpacity(0.5),
+                  blurRadius: 20,
+                  spreadRadius: 5,
+                ),
+              ],
+            ),
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                // Gemstone shape
+                CustomPaint(
+                  size: const Size(50, 50),
+                  painter: GemStonePainter(
+                    color: CrystalGrimoireTheme.amethyst,
+                    shimmerProgress: _sparkleController.value,
+                  ),
+                ),
+                // Inner glow
+                Container(
+                  width: 30,
+                  height: 30,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: RadialGradient(
+                      colors: [
+                        Colors.white.withOpacity(0.8),
+                        Colors.white.withOpacity(0.0),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class GemStonePainter extends CustomPainter {
+  final Color color;
+  final double shimmerProgress;
+
+  GemStonePainter({
+    required this.color,
+    required this.shimmerProgress,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.fill;
+
+    final shimmerPaint = Paint()
+      ..color = Colors.white.withOpacity(0.6)
+      ..style = PaintingStyle.fill;
+
+    final path = Path();
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = size.width / 2;
+
+    // Create hexagonal gemstone shape
+    for (int i = 0; i < 6; i++) {
+      final angle = (i * 60) * math.pi / 180;
+      final x = center.dx + radius * math.cos(angle);
+      final y = center.dy + radius * math.sin(angle);
+      
+      if (i == 0) {
+        path.moveTo(x, y);
+      } else {
+        path.lineTo(x, y);
+      }
+    }
+    path.close();
+
+    // Draw base gemstone
+    canvas.drawPath(path, paint);
+
+    // Draw facets
+    for (int i = 0; i < 6; i++) {
+      final angle = (i * 60) * math.pi / 180;
+      final x = center.dx + radius * math.cos(angle);
+      final y = center.dy + radius * math.sin(angle);
+      
+      final facetPath = Path()
+        ..moveTo(center.dx, center.dy)
+        ..lineTo(x, y);
+      
+      final nextAngle = ((i + 1) * 60) * math.pi / 180;
+      final nextX = center.dx + radius * math.cos(nextAngle);
+      final nextY = center.dy + radius * math.sin(nextAngle);
+      facetPath.lineTo(nextX, nextY);
+      facetPath.close();
+      
+      // Shimmer effect on facets
+      if (i == (shimmerProgress * 6).floor()) {
+        canvas.drawPath(facetPath, shimmerPaint);
+      }
+      
+      // Facet borders
+      final borderPaint = Paint()
+        ..color = color.withOpacity(0.3)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1;
+      
+      canvas.drawPath(facetPath, borderPaint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+}
+
+class SparklePainter extends CustomPainter {
+  final double progress;
+  final Color color;
+
+  SparklePainter({
+    required this.progress,
+    required this.color,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.fill;
+
+    // Create random sparkles
+    final random = math.Random(42);
+    for (int i = 0; i < 10; i++) {
+      final x = random.nextDouble() * size.width;
+      final y = random.nextDouble() * size.height;
+      final sparkleProgress = (progress + i * 0.1) % 1.0;
+      final opacity = math.sin(sparkleProgress * math.pi);
+      
+      paint.color = color.withOpacity(opacity * 0.8);
+      
+      // Draw sparkle
+      canvas.drawCircle(
+        Offset(x, y),
+        2 + random.nextDouble() * 2,
+        paint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+}

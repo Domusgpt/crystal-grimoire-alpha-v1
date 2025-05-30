@@ -18,6 +18,7 @@ import 'auth_account_screen.dart';
 import 'llm_lab_screen.dart';
 import 'crystal_gallery_screen.dart';
 import '../widgets/daily_crystal_card.dart';
+import '../widgets/enhanced_app_title.dart';
 import 'crystal_ai_oracle.dart';
 import 'dream_journal_analyzer.dart';
 import 'crystal_marketplace.dart';
@@ -106,20 +107,18 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen>
               child: CustomScrollView(
                 physics: const BouncingScrollPhysics(),
                 slivers: [
-                  // App bar
+                  // Enhanced App bar with logo
                   SliverAppBar(
-                    expandedHeight: 120,
+                    expandedHeight: 200,
                     floating: true,
                     backgroundColor: Colors.transparent,
                     elevation: 0,
-                    flexibleSpace: FlexibleSpaceBar(
-                      title: MysticalAnimations.fadeScaleIn(
-                        child: ShimmerText(
-                          text: 'Crystal Grimoire',
-                          style: theme.textTheme.headlineMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 1.0,
-                          ),
+                    flexibleSpace: const FlexibleSpaceBar(
+                      title: Padding(
+                        padding: EdgeInsets.only(bottom: 20),
+                        child: EnhancedAppTitle(
+                          fontSize: 36,
+                          showLogo: true,
                         ),
                       ),
                       centerTitle: true,
@@ -153,20 +152,21 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen>
                         
                         const SizedBox(height: 24),
                         
-                        // Daily Crystal Card
-                        MysticalAnimations.slideIn(
-                          direction: SlideDirection.left,
-                          delay: const Duration(milliseconds: 300),
-                          child: const DailyCrystalCard(),
-                        ),
                         
-                        const SizedBox(height: 16),
-                        
-                        // Usage stats
+                        // Daily Spiritual Insights (replacing usage stats)
                         MysticalAnimations.slideIn(
                           direction: SlideDirection.left,
                           delay: const Duration(milliseconds: 400),
-                          child: _buildUsageStats(),
+                          child: _buildDailySpiritualInsights(),
+                        ),
+                        
+                        const SizedBox(height: 24),
+                        
+                        // Crystal of the Day (moved down)
+                        MysticalAnimations.slideIn(
+                          direction: SlideDirection.right,
+                          delay: const Duration(milliseconds: 500),
+                          child: _buildEnhancedCrystalOfDay(),
                         ),
                         
                         const SizedBox(height: 32),
@@ -278,6 +278,227 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen>
             style: Theme.of(context).textTheme.bodySmall,
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildDailySpiritualInsights() {
+    final now = DateTime.now();
+    final moonPhases = ['🌑 New Moon', '🌒 Waxing Crescent', '🌓 First Quarter', '🌔 Waxing Gibbous', '🌕 Full Moon', '🌖 Waning Gibbous', '🌗 Last Quarter', '🌘 Waning Crescent'];
+    final currentMoonPhase = moonPhases[now.day % 8];
+    
+    final spiritualInsights = [
+      'Trust your intuition - the universe is guiding you',
+      'Your crystal allies are amplifying your intentions today',
+      'Perfect time for manifestation and crystal charging',
+      'Your aura is especially receptive to healing energies',
+      'The cosmic energies support your spiritual growth',
+    ];
+    
+    final dailyInsight = spiritualInsights[now.day % spiritualInsights.length];
+    
+    return EnhancedMysticalCard(
+      isGlowing: true,
+      glowColor: CrystalGrimoireTheme.amethyst,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(
+                Icons.auto_awesome,
+                color: CrystalGrimoireTheme.celestialGold,
+                size: 24,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                'Daily Spiritual Insights',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          
+          // Moon phase
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              gradient: LinearGradient(
+                colors: [
+                  CrystalGrimoireTheme.moonlightSilver.withOpacity(0.2),
+                  CrystalGrimoireTheme.etherealBlue.withOpacity(0.2),
+                ],
+              ),
+            ),
+            child: Row(
+              children: [
+                Text(
+                  currentMoonPhase,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const Spacer(),
+                const Text(
+                  'Lunar Energy',
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          
+          const SizedBox(height: 12),
+          
+          // Daily insight
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              gradient: LinearGradient(
+                colors: [
+                  CrystalGrimoireTheme.amethyst.withOpacity(0.2),
+                  CrystalGrimoireTheme.cosmicViolet.withOpacity(0.2),
+                ],
+              ),
+            ),
+            child: Text(
+              dailyInsight,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 14,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEnhancedCrystalOfDay() {
+    final crystals = [
+      {'name': 'Black Obsidian', 'property': 'Psychic Protection', 'element': 'Earth', 'chakra': 'Root'},
+      {'name': 'Amethyst', 'property': 'Spiritual Awareness', 'element': 'Air', 'chakra': 'Crown'},
+      {'name': 'Rose Quartz', 'property': 'Unconditional Love', 'element': 'Water', 'chakra': 'Heart'},
+      {'name': 'Citrine', 'property': 'Abundance & Joy', 'element': 'Fire', 'chakra': 'Solar Plexus'},
+      {'name': 'Clear Quartz', 'property': 'Amplification', 'element': 'All', 'chakra': 'Crown'},
+    ];
+    
+    final todaysCrystal = crystals[DateTime.now().day % crystals.length];
+    
+    return EnhancedMysticalCard(
+      isGlowing: true,
+      glowColor: CrystalGrimoireTheme.celestialGold,
+      child: Row(
+        children: [
+          // Crystal icon
+          Container(
+            width: 80,
+            height: 80,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: RadialGradient(
+                colors: [
+                  CrystalGrimoireTheme.celestialGold.withOpacity(0.3),
+                  CrystalGrimoireTheme.warningAmber.withOpacity(0.5),
+                ],
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: CrystalGrimoireTheme.celestialGold.withOpacity(0.4),
+                  blurRadius: 20,
+                  spreadRadius: 2,
+                ),
+              ],
+            ),
+            child: const Icon(
+              Icons.diamond,
+              color: Colors.white,
+              size: 36,
+            ),
+          ),
+          
+          const SizedBox(width: 16),
+          
+          // Crystal info
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.wb_sunny,
+                      color: CrystalGrimoireTheme.celestialGold,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      'Crystal of the Day',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: CrystalGrimoireTheme.celestialGold,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  todaysCrystal['name']!,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  todaysCrystal['property']!,
+                  style: const TextStyle(
+                    color: Colors.white70,
+                    fontSize: 14,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    _buildPropertyTag(todaysCrystal['element']!, CrystalGrimoireTheme.successGreen),
+                    const SizedBox(width: 8),
+                    _buildPropertyTag(todaysCrystal['chakra']!, CrystalGrimoireTheme.mysticPurple),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  Widget _buildPropertyTag(String text, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: color.withOpacity(0.5)),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(
+          color: color,
+          fontSize: 10,
+          fontWeight: FontWeight.w600,
+        ),
       ),
     );
   }
