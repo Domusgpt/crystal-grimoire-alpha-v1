@@ -89,26 +89,32 @@ class SubscriptionConfig {
   static const double foundersPrice = 499.0;
   static const int foundersLimit = 1000;
   
-  // Feature flags
+  // Feature flags - Updated tier structure
   static const Map<String, List<String>> tierFeatures = {
     freeTier: [
-      'basic_identification',      // 4 per month with ads
-      'basic_ai_model',           // Gemini-1.5-flash
+      'basic_identification',      // 4 per month with Gemini 2.0 Flash
+      'crystal_database_access',   // Basic crystal information
       'community_support',        // Forum only
+      'ad_supported',             // Ads shown
     ],
     premiumTier: [
-      'unlimited_identification',  // No limits
-      'crystal_journal',          // Locked behind paywall
-      'crystal_grid_designer',    // Locked behind paywall
-      'upgraded_ai_model',        // GPT-4o-mini or Gemini-1.5-pro
-      'spiritual_advisor_chat',
-      'birth_chart_integration',
-      'meditation_patterns',
+      'unlimited_identification',  // No limits with enhanced models
+      'crystal_journal',          // Personal crystal collection
+      'crystal_grid_designer',    // Grid creation tools
+      'upgraded_ai_model',        // Gemini-1.5-pro
+      'spiritual_advisor_chat',   // AI guidance and chat
+      'birth_chart_integration',  // Astrological features
+      'meditation_patterns',      // Guided meditations
+      'dream_journal_analyzer',   // Dream interpretation
       'ad_free_experience',       // No ads
     ],
     proTier: [
       'all_premium_features',
       'premium_ai_models',        // GPT-4o, Claude-3.5-sonnet
+      'crystal_ai_oracle',        // Advanced AI divination
+      'moon_ritual_planner',      // Lunar ceremony planning
+      'energy_healing_sessions',  // Guided healing protocols
+      'astro_crystal_matcher',    // Advanced astrological matching
       'priority_support',
       'api_access',
       'beta_features',
@@ -121,6 +127,7 @@ class SubscriptionConfig {
       'founders_badge',
       'dev_channel',
       'custom_training',
+      'developer_dashboard',      // Technical configuration access
     ],
   };
 }

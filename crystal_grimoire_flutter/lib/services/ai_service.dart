@@ -35,6 +35,41 @@ class AIService {
   // Current provider (default to Gemini for free testing)
   static AIProvider currentProvider = AIProvider.gemini;
   
+  // Enhanced prompt for premium users - Maximum accuracy
+  static const String _premiumSpiritualAdvisorPrompt = '''
+You are the CrystalGrimoire Master Crystal Sage - an advanced spiritual advisor with deep geological expertise 
+who provides the most accurate crystal identifications while maintaining profound mystical wisdom.
+
+EXPERT GEOLOGICAL ANALYSIS (Use internally for premium accuracy):
+- MANDATORY: Analyze crystal system, habit, luster, hardness, fracture patterns
+- EXAMINE: Color zoning, inclusions, twinning, surface texture, transparency
+- IDENTIFY: Formation environment, host rock relationships, alteration signs
+- ASSESS: Size, weight estimation, rarity indicators, treatment signs
+- COMPARE: Against extensive mineral database with confidence percentages
+
+PREMIUM IDENTIFICATION PROTOCOL:
+1. Conduct thorough visual analysis of ALL diagnostic features
+2. Cross-reference with geological formation patterns
+3. Apply advanced mineralogical knowledge (polytypes, pseudomorphs, epitaxy)
+4. Consider regional geology and typical occurrences
+5. Evaluate authenticity and possible treatments/enhancements
+6. Provide confidence level based on observable evidence:
+   - CERTAIN (95-100%): "The cosmic energies reveal with absolute clarity..."
+   - HIGHLY LIKELY (85-94%): "The crystal spirits speak with great confidence..."
+   - PROBABLE (70-84%): "The mineral kingdom suggests this is..."
+   - POSSIBLE (50-69%): "The stone whispers it may be..."
+   - UNCERTAIN (<50%): "The crystal's true nature remains veiled..."
+
+MYSTICAL EXPRESSION WITH SCIENTIFIC FOUNDATION:
+- Translate technical features into spiritual language
+- Maintain the mystical voice while demonstrating expertise
+- Include scientific certainty expressed through spiritual confidence
+- Provide detailed observations disguised as mystical insights
+
+Remember: You are providing PREMIUM identification service with the highest accuracy possible
+while preserving the magical experience that makes crystal work meaningful.
+''';
+
   // The core spiritual advisor prompt - Enhanced for accuracy while maintaining mystical voice
   static const String _spiritualAdvisorPrompt = '''
 You are the CrystalGrimoire Spiritual Advisor - a mystical guide who channels both ancient wisdom 
@@ -114,8 +149,9 @@ helping souls connect with their crystalline teachers and guides.
         throw Exception(ApiConfig.quotaExceeded);
       }
 
-      // Use specified provider or current default
-      provider ??= currentProvider;
+      // Determine the best provider and model based on user's tier
+      final identificationTier = await UsageTracker.getIdentificationTier();
+      provider ??= _selectOptimalProvider(identificationTier);
 
       // Generate session ID if not provided
       sessionId ??= const Uuid().v4();
@@ -146,14 +182,14 @@ helping souls connect with their crystalline teachers and guides.
           images.map((image) => _prepareImage(image)),
         );
 
-        // Call the appropriate AI provider
+        // Call the appropriate AI provider with tier information
         String response;
         switch (provider) {
           case AIProvider.gemini:
-            response = await _callGemini(base64Images, userContext);
+            response = await _callGemini(base64Images, userContext, tier: identificationTier);
             break;
           case AIProvider.openai:
-            response = await _callOpenAI(base64Images, userContext);
+            response = await _callOpenAI(base64Images, userContext, tier: identificationTier);
             break;
           case AIProvider.groq:
             response = await _callGroq(base64Images, userContext);
@@ -172,8 +208,12 @@ helping souls connect with their crystalline teachers and guides.
         // Cache the result
         await CacheService.cacheIdentification(imageHash, identification);
 
-        // Record usage
-        await UsageTracker.recordUsage();
+        // Record usage - use premium tracking if using enhanced/premium models
+        if (identificationTier != IdentificationTier.basic) {
+          await UsageTracker.recordPremiumUsage();
+        } else {
+          await UsageTracker.recordUsage();
+        }
 
         return identification;
         
@@ -188,22 +228,44 @@ helping souls connect with their crystalline teachers and guides.
     }
   }
 
-  /// Google Gemini API call - FREE TIER!
-  static Future<String> _callGemini(List<String> base64Images, String? userContext) async {
+  /// Google Gemini API call - Model selection based on user tier
+  static Future<String> _callGemini(List<String> base64Images, String? userContext, {IdentificationTier? tier}) async {
     final apiKey = ApiConfig.geminiApiKey;
     if (apiKey.isEmpty || apiKey == 'YOUR_GEMINI_API_KEY') {
       throw Exception('Please set your Gemini API key in api_config.dart\n'
                      'Get a FREE key at: https://makersuite.google.com/app/apikey');
     }
 
-    final url = '${_endpoints[AIProvider.gemini]}gemini-1.5-flash:generateContent?key=$apiKey';
+    // Select model based on tier
+    String model;
+    tier ??= await UsageTracker.getIdentificationTier();
+    
+    switch (tier) {
+      case IdentificationTier.premium:
+        model = 'gemini-1.5-pro'; // Best Gemini model for Pro users
+        break;
+      case IdentificationTier.enhanced:
+        model = 'gemini-1.5-pro'; // Pro model for premium users
+        break;
+      case IdentificationTier.basic:
+      default:
+        model = 'gemini-2.0-flash-exp'; // Latest Gemini 2.0 Flash for free users
+        break;
+    }
+
+    final url = '${_endpoints[AIProvider.gemini]}$model:generateContent?key=$apiKey';
     
     // Build Gemini-specific request format
     final parts = <Map<String, dynamic>>[];
     
+    // Select appropriate prompt based on tier
+    final prompt = (tier == IdentificationTier.premium) 
+        ? _premiumSpiritualAdvisorPrompt 
+        : _spiritualAdvisorPrompt;
+    
     // Add the system prompt as text
     parts.add({
-      'text': _spiritualAdvisorPrompt + '\n\n' + 
+      'text': prompt + '\n\n' + 
               (userContext ?? 'Please identify this crystal and provide spiritual guidance.')
     });
     
@@ -260,19 +322,41 @@ helping souls connect with their crystalline teachers and guides.
     }
   }
 
-  /// OpenAI API call
-  static Future<String> _callOpenAI(List<String> base64Images, String? userContext) async {
+  /// OpenAI API call - Model selection based on user tier
+  static Future<String> _callOpenAI(List<String> base64Images, String? userContext, {IdentificationTier? tier}) async {
     final apiKey = ApiConfig.openaiApiKey;
     if (apiKey.isEmpty || apiKey == 'YOUR_OPENAI_API_KEY') {
       throw Exception('Please set your OpenAI API key in api_config.dart');
     }
 
+    // Select model based on tier
+    String model;
+    tier ??= await UsageTracker.getIdentificationTier();
+    
+    switch (tier) {
+      case IdentificationTier.premium:
+        model = 'gpt-4o'; // Best accuracy for pro users and new user bonus
+        break;
+      case IdentificationTier.enhanced:
+        model = 'gpt-4o-mini'; // Good balance for premium users
+        break;
+      case IdentificationTier.basic:
+      default:
+        model = 'gpt-4o-mini'; // Cheaper option
+        break;
+    }
+
     final messages = <Map<String, dynamic>>[];
+    
+    // Select appropriate prompt based on tier
+    final prompt = (tier == IdentificationTier.premium) 
+        ? _premiumSpiritualAdvisorPrompt 
+        : _spiritualAdvisorPrompt;
     
     // System prompt
     messages.add({
       'role': 'system',
-      'content': _spiritualAdvisorPrompt,
+      'content': prompt,
     });
 
     // User message with images
@@ -306,7 +390,7 @@ helping souls connect with their crystalline teachers and guides.
         'Authorization': 'Bearer $apiKey',
       },
       body: jsonEncode({
-        'model': 'gpt-4o-mini', // Cheaper than gpt-4o
+        'model': model, // Dynamic model based on user tier
         'messages': messages,
         'max_tokens': 2048,
         'temperature': 0.7,
@@ -361,6 +445,42 @@ helping souls connect with their crystalline teachers and guides.
       return data['choices'][0]['message']['content'];
     } else {
       throw Exception('Groq API error: ${response.statusCode}');
+    }
+  }
+
+  /// Selects the optimal AI provider based on user's identification tier
+  static AIProvider _selectOptimalProvider(IdentificationTier tier) {
+    switch (tier) {
+      case IdentificationTier.premium:
+        // Pro users and new user bonus get the best models
+        // Prefer GPT-4o for highest accuracy, fallback to Claude 3.5
+        if (ApiConfig.openaiApiKey != 'YOUR_OPENAI_API_KEY_HERE' && 
+            ApiConfig.openaiApiKey.isNotEmpty) {
+          return AIProvider.openai; // GPT-4o
+        } else if (ApiConfig.claudeApiKey != 'YOUR_CLAUDE_API_KEY_HERE' && 
+                   ApiConfig.claudeApiKey.isNotEmpty) {
+          return AIProvider.claude; // Claude 3.5 Sonnet
+        } else {
+          return AIProvider.gemini; // Fallback to Gemini Pro
+        }
+        
+      case IdentificationTier.enhanced:
+        // Premium users get mid-tier models
+        // Prefer Gemini Pro or GPT-4o-mini
+        if (ApiConfig.geminiApiKey != 'YOUR_GEMINI_API_KEY_HERE' && 
+            ApiConfig.geminiApiKey.isNotEmpty) {
+          return AIProvider.gemini; // Will use Gemini Pro model
+        } else if (ApiConfig.openaiApiKey != 'YOUR_OPENAI_API_KEY_HERE' && 
+                   ApiConfig.openaiApiKey.isNotEmpty) {
+          return AIProvider.openai; // Will use GPT-4o-mini
+        } else {
+          return AIProvider.gemini; // Fallback
+        }
+        
+      case IdentificationTier.basic:
+      default:
+        // Free users get basic models (Gemini Flash)
+        return AIProvider.gemini;
     }
   }
 

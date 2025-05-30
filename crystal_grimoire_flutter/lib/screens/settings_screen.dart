@@ -12,6 +12,7 @@ import '../widgets/animations/mystical_animations.dart';
 import '../services/storage_service.dart';
 import '../models/birth_chart.dart';
 import 'birth_chart_screen.dart';
+import 'developer_dashboard.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({Key? key}) : super(key: key);
@@ -21,16 +22,9 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  String _selectedAIProvider = 'gemini'; // Default
   String _currentPlan = 'free';
   bool _notificationsEnabled = true;
   bool _darkModeEnabled = true;
-  bool _showAdvancedSettings = false;
-
-  // API Keys (stored securely in production)
-  final TextEditingController _openAIKeyController = TextEditingController();
-  final TextEditingController _anthropicKeyController = TextEditingController();
-  final TextEditingController _geminiKeyController = TextEditingController();
 
   @override
   void initState() {
@@ -42,7 +36,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     // Load saved settings
     // In production, these would be loaded from secure storage
     setState(() {
-      _selectedAIProvider = ApiConfig.defaultProvider;
       _currentPlan = 'free'; // Default plan
     });
   }
@@ -64,7 +57,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     children: [
                       _buildSubscriptionSection(),
                       const SizedBox(height: 24),
-                      _buildAIProviderSection(),
+                      _buildIdentificationTierSection(),
                       const SizedBox(height: 24),
                       _buildUsageStatsSection(),
                       const SizedBox(height: 24),
@@ -170,65 +163,203 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _buildAIProviderSection() {
-    return MysticalCard(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  '🤖 AI Provider',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
+  Widget _buildIdentificationTierSection() {
+    return FutureBuilder<IdentificationTier>(
+      future: UsageTracker.getIdentificationTier(),
+      builder: (context, tierSnapshot) {
+        if (!tierSnapshot.hasData) {
+          return const MysticalCard(
+            child: Padding(
+              padding: EdgeInsets.all(16),
+              child: Center(child: CircularProgressIndicator()),
+            ),
+          );
+        }
+
+        final tier = tierSnapshot.data!;
+        return FutureBuilder<int>(
+          future: UsageTracker.getNewUserBonusRemaining(),
+          builder: (context, bonusSnapshot) {
+            final bonusRemaining = bonusSnapshot.data ?? 0;
+            
+            return MysticalCard(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const Text(
+                          '🔮 Crystal Identification',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                        const Spacer(),
+                        _buildTierBadge(tier),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    
+                    _buildTierDescription(tier),
+                    
+                    if (bonusRemaining > 0) ...[
+                      const SizedBox(height: 16),
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              Colors.amber.withOpacity(0.3),
+                              Colors.orange.withOpacity(0.3),
+                            ],
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.amber),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.star, color: Colors.amber),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    '🎁 New User Bonus',
+                                    style: TextStyle(
+                                      color: Colors.amber,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  Text(
+                                    '$bonusRemaining premium identifications remaining',
+                                    style: const TextStyle(color: Colors.white),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                    
+                    const SizedBox(height: 16),
+                    
+                    if (_currentPlan == 'founders' || _currentPlan == 'pro')
+                      MysticalButton(
+                        label: 'Developer Dashboard',
+                        icon: Icons.developer_mode,
+                        onPressed: () => _openDeveloperDashboard(),
+                        width: double.infinity,
+                      ),
+                  ],
                 ),
-                TextButton(
-                  onPressed: () => setState(() => _showAdvancedSettings = !_showAdvancedSettings),
-                  child: Text(
-                    _showAdvancedSettings ? 'Hide API Keys' : 'Show API Keys',
-                    style: const TextStyle(color: MysticalTheme.accentColor),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            _buildAIOption(
-              'Gemini AI',
-              'Google\'s latest model - Fast & accurate',
-              'gemini',
-              _currentPlan != 'free',
-            ),
-            _buildAIOption(
-              'GPT-4 Vision',
-              'OpenAI\'s powerful vision model',
-              'openai',
-              _currentPlan == 'pro' || _currentPlan == 'founders',
-            ),
-            _buildAIOption(
-              'Claude 3 Vision',
-              'Anthropic\'s advanced model',
-              'anthropic',
-              _currentPlan == 'pro' || _currentPlan == 'founders',
-            ),
-            if (_showAdvancedSettings) ...[
-              const SizedBox(height: 16),
-              const Text(
-                'API Keys (Optional)',
-                style: TextStyle(color: Colors.white70, fontSize: 14),
               ),
-              const SizedBox(height: 8),
-              _buildAPIKeyField('OpenAI API Key', _openAIKeyController),
-              _buildAPIKeyField('Anthropic API Key', _anthropicKeyController),
-              _buildAPIKeyField('Gemini API Key', _geminiKeyController),
-            ],
-          ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildTierBadge(IdentificationTier tier) {
+    Color color;
+    String text;
+    
+    switch (tier) {
+      case IdentificationTier.premium:
+        color = Colors.purple;
+        text = 'PREMIUM';
+        break;
+      case IdentificationTier.enhanced:
+        color = Colors.blue;
+        text = 'ENHANCED';
+        break;
+      case IdentificationTier.basic:
+      default:
+        color = Colors.grey;
+        text = 'BASIC';
+        break;
+    }
+    
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(
+          color: color,
+          fontSize: 12,
+          fontWeight: FontWeight.bold,
         ),
+      ),
+    );
+  }
+
+  Widget _buildTierDescription(IdentificationTier tier) {
+    String description;
+    String model;
+    String features;
+    
+    switch (tier) {
+      case IdentificationTier.premium:
+        description = 'Highest accuracy crystal identification with premium AI models';
+        model = 'GPT-4o / Claude 3.5 / Gemini Pro';
+        features = 'AI Oracle, Moon Rituals, Energy Healing, Dream Analysis';
+        break;
+      case IdentificationTier.enhanced:
+        description = 'Enhanced crystal identification with spiritual guidance features';
+        model = 'Gemini Pro';
+        features = 'AI Chat, Birth Charts, Meditation, Crystal Journal';
+        break;
+      case IdentificationTier.basic:
+      default:
+        description = 'Basic crystal identification with modern AI';
+        model = 'Gemini 2.0 Flash (Latest)';
+        features = 'Crystal Database, Community Support';
+        break;
+    }
+    
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          description,
+          style: const TextStyle(color: Colors.white),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'AI Model: $model',
+          style: TextStyle(
+            color: Colors.white.withOpacity(0.7),
+            fontSize: 14,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          'Features: $features',
+          style: TextStyle(
+            color: Colors.white.withOpacity(0.6),
+            fontSize: 12,
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _openDeveloperDashboard() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const DeveloperDashboard(),
       ),
     );
   }
@@ -658,63 +789,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _buildAIOption(String name, String description, String value, bool enabled) {
-    final isSelected = _selectedAIProvider == value;
-    
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: RadioListTile<String>(
-        title: Text(
-          name,
-          style: TextStyle(
-            color: enabled ? Colors.white : Colors.white38,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        subtitle: Text(
-          description,
-          style: TextStyle(
-            color: enabled ? Colors.white70 : Colors.white30,
-            fontSize: 12,
-          ),
-        ),
-        value: value,
-        groupValue: _selectedAIProvider,
-        onChanged: enabled ? (value) {
-          setState(() => _selectedAIProvider = value!);
-          // TODO: Implement provider switching
-        } : null,
-        activeColor: MysticalTheme.accentColor,
-      ),
-    );
-  }
-
-  Widget _buildAPIKeyField(String label, TextEditingController controller) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: TextField(
-        controller: controller,
-        obscureText: true,
-        style: const TextStyle(color: Colors.white),
-        decoration: InputDecoration(
-          labelText: label,
-          labelStyle: TextStyle(color: Colors.white.withOpacity(0.7)),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-            borderSide: BorderSide(color: Colors.white.withOpacity(0.3)),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-            borderSide: BorderSide(color: Colors.white.withOpacity(0.3)),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-            borderSide: const BorderSide(color: MysticalTheme.accentColor),
-          ),
-        ),
-      ),
-    );
-  }
 
   Widget _buildUsageBar(String label, int current, int max) {
     final percentage = max > 0 ? (current / max).clamp(0.0, 1.0) : 0.0;
@@ -1026,9 +1100,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   void dispose() {
-    _openAIKeyController.dispose();
-    _anthropicKeyController.dispose();
-    _geminiKeyController.dispose();
     super.dispose();
   }
 }

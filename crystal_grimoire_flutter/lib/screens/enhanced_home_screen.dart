@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/app_state.dart';
 import '../services/storage_service.dart';
+import '../services/usage_tracker.dart';
+import '../config/api_config.dart';
 import '../config/enhanced_theme.dart';
 import '../widgets/animations/enhanced_animations.dart';
 import '../widgets/common/enhanced_mystical_widgets.dart';
@@ -714,16 +716,21 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen>
     );
   }
 
-  void _navigateToGuidance() {
-    Navigator.push(
-      context,
-      PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) => const MetaphysicalGuidanceScreen(),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          return ScaleTransition(scale: animation, child: child);
-        },
-      ),
-    );
+  void _navigateToGuidance() async {
+    // Spiritual Advisor Chat requires premium tier
+    if (await UsageTracker.canAccessFeature('spiritual_advisor_chat')) {
+      Navigator.push(
+        context,
+        PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) => const MetaphysicalGuidanceScreen(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return ScaleTransition(scale: animation, child: child);
+          },
+        ),
+      );
+    } else {
+      _showUpgradeDialog('Spiritual Advisor Chat', 'premium');
+    }
   }
 
   void _navigateToAccount() {
@@ -931,72 +938,89 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen>
     );
   }
   
-  // ULTIMATE Feature Navigation Methods
-  void _navigateToOracle() {
-    Navigator.push(
-      context,
-      PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) => const CrystalAIOracleScreen(),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          return FadeTransition(
-            opacity: animation,
-            child: ScaleTransition(
-              scale: Tween<double>(
-                begin: 0.9,
-                end: 1.0,
+  // ULTIMATE Feature Navigation Methods with Tier Restrictions
+  void _navigateToOracle() async {
+    // Crystal AI Oracle requires premium or pro tier
+    if (await UsageTracker.canAccessFeature('crystal_ai_oracle')) {
+      Navigator.push(
+        context,
+        PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) => const CrystalAIOracleScreen(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(
+              opacity: animation,
+              child: ScaleTransition(
+                scale: Tween<double>(
+                  begin: 0.9,
+                  end: 1.0,
+                ).animate(CurvedAnimation(
+                  parent: animation,
+                  curve: Curves.easeOutCubic,
+                )),
+                child: child,
+              ),
+            );
+          },
+        ),
+      );
+    } else {
+      _showUpgradeDialog('Crystal AI Oracle', 'pro');
+    }
+  }
+  
+  void _navigateToMoonRituals() async {
+    // Moon Ritual Planner requires pro tier
+    if (await UsageTracker.canAccessFeature('moon_ritual_planner')) {
+      Navigator.push(
+        context,
+        PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) => const MoonRitualPlannerScreen(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return SlideTransition(
+              position: Tween<Offset>(
+                begin: const Offset(0.0, -1.0),
+                end: Offset.zero,
               ).animate(CurvedAnimation(
                 parent: animation,
                 curve: Curves.easeOutCubic,
               )),
               child: child,
-            ),
-          );
-        },
-      ),
-    );
+            );
+          },
+        ),
+      );
+    } else {
+      _showUpgradeDialog('Moon Ritual Planner', 'pro');
+    }
   }
   
-  void _navigateToMoonRituals() {
-    Navigator.push(
-      context,
-      PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) => const MoonRitualPlannerScreen(),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          return SlideTransition(
-            position: Tween<Offset>(
-              begin: const Offset(0.0, -1.0),
-              end: Offset.zero,
-            ).animate(CurvedAnimation(
-              parent: animation,
-              curve: Curves.easeOutCubic,
-            )),
-            child: child,
-          );
-        },
-      ),
-    );
+  void _navigateToDreamJournal() async {
+    // Dream Journal Analyzer requires premium tier
+    if (await UsageTracker.canAccessFeature('dream_journal_analyzer')) {
+      Navigator.push(
+        context,
+        PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) => const DreamJournalAnalyzer(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(
+              opacity: animation,
+              child: child,
+            );
+          },
+        ),
+      );
+    } else {
+      _showUpgradeDialog('Dream Journal Analyzer', 'premium');
+    }
   }
   
-  void _navigateToDreamJournal() {
-    Navigator.push(
-      context,
-      PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) => const DreamJournalAnalyzer(),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          return FadeTransition(
-            opacity: animation,
-            child: child,
-          );
-        },
-      ),
-    );
-  }
-  
-  void _navigateToEnergyHealing() {
-    Navigator.push(
-      context,
-      PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) => const CrystalEnergyHealingScreen(),
+  void _navigateToEnergyHealing() async {
+    // Energy Healing Sessions require pro tier
+    if (await UsageTracker.canAccessFeature('energy_healing_sessions')) {
+      Navigator.push(
+        context,
+        PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) => const CrystalEnergyHealingScreen(),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           return SlideTransition(
             position: Tween<Offset>(
@@ -1008,48 +1032,61 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen>
         },
       ),
     );
+    } else {
+      _showUpgradeDialog('Energy Healing Sessions', 'pro');
+    }
   }
   
-  void _navigateToAstroMatcher() {
-    Navigator.push(
-      context,
-      PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) => const AstroCrystalMatcher(),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          return ScaleTransition(
-            scale: Tween<double>(
-              begin: 0.5,
-              end: 1.0,
-            ).animate(CurvedAnimation(
-              parent: animation,
-              curve: Curves.easeOutBack,
+  void _navigateToAstroMatcher() async {
+    // Astro Crystal Matcher requires pro tier  
+    if (await UsageTracker.canAccessFeature('astro_crystal_matcher')) {
+      Navigator.push(
+        context,
+        PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) => const AstroCrystalMatcher(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return ScaleTransition(
+              scale: Tween<double>(
+                begin: 0.5,
+                end: 1.0,
+              ).animate(CurvedAnimation(
+                parent: animation,
+                curve: Curves.easeOutBack,
             )),
             child: child,
           );
         },
       ),
     );
+    } else {
+      _showUpgradeDialog('Astro Crystal Matcher', 'pro');
+    }
   }
   
-  void _navigateToSoundBath() {
-    Navigator.push(
-      context,
-      PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) => MeditationSoundBathScreen(),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          return FadeTransition(
-            opacity: animation,
-            child: SlideTransition(
-              position: Tween<Offset>(
-                begin: const Offset(0.0, 0.3),
-                end: Offset.zero,
-              ).animate(animation),
-              child: child,
-            ),
-          );
-        },
-      ),
-    );
+  void _navigateToSoundBath() async {
+    // Meditation Sound Bath requires premium tier
+    if (await UsageTracker.canAccessFeature('meditation_patterns')) {
+      Navigator.push(
+        context,
+        PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) => MeditationSoundBathScreen(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(
+              opacity: animation,
+              child: SlideTransition(
+                position: Tween<Offset>(
+                  begin: const Offset(0.0, 0.3),
+                  end: Offset.zero,
+                ).animate(animation),
+                child: child,
+              ),
+            );
+          },
+        ),
+      );
+    } else {
+      _showUpgradeDialog('Meditation Sound Bath', 'premium');
+    }
   }
   
   void _navigateToMarketplace() {
@@ -1069,6 +1106,62 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen>
             child: child,
           );
         },
+      ),
+    );
+  }
+
+  // Upgrade dialog for restricted features
+  void _showUpgradeDialog(String featureName, String requiredTier) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: CrystalGrimoireTheme.royalPurple,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(
+          children: [
+            Icon(Icons.star, color: CrystalGrimoireTheme.celestialGold),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'Unlock $featureName',
+                style: const TextStyle(color: Colors.white, fontSize: 18),
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'This powerful AI guidance feature requires ${requiredTier == 'premium' ? 'Premium' : 'Pro'} tier to access.',
+              style: const TextStyle(color: Colors.white70),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              requiredTier == 'premium' 
+                  ? '✨ Premium: \$8.99/month\n• Unlimited crystal identifications\n• AI spiritual guidance\n• Dream analysis\n• Birth chart integration'
+                  : '🚀 Pro: \$19.99/month\n• All Premium features\n• Premium AI models (GPT-4, Claude)\n• Advanced spiritual tools\n• Crystal AI Oracle\n• Priority support',
+              style: const TextStyle(color: Colors.white, fontSize: 14),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Maybe Later', style: TextStyle(color: Colors.white70)),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _navigateToSettings(); // Navigate to subscription settings
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: CrystalGrimoireTheme.celestialGold,
+              foregroundColor: CrystalGrimoireTheme.deepSpace,
+            ),
+            child: Text('Upgrade to ${requiredTier == 'premium' ? 'Premium' : 'Pro'}'),
+          ),
+        ],
       ),
     );
   }

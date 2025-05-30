@@ -9,6 +9,9 @@ class UsageTracker {
   static const String _lastUsageKey = 'last_usage_timestamp';
   static const String _totalUsageKey = 'total_identifications';
   static const String _previewUsedKey = 'preview_features_used';
+  static const String _premiumIDsUsedKey = 'premium_ids_used';
+  static const String _firstInstallKey = 'first_install_date';
+  static const String _newUserBonusUsedKey = 'new_user_bonus_used';
   
   /// Checks if user can perform an identification
   static Future<bool> canIdentify() async {
@@ -20,6 +23,12 @@ class UsageTracker {
       
       // Premium and Pro users have unlimited access
       if (tier != SubscriptionConfig.freeTier) {
+        return true;
+      }
+      
+      // Check if new user still has bonus premium IDs
+      final bonusRemaining = await getNewUserBonusRemaining();
+      if (bonusRemaining > 0) {
         return true;
       }
       
@@ -248,6 +257,128 @@ class UsageTracker {
     
     return null;
   }
+
+  /// Gets remaining new user bonus premium identifications
+  static Future<int> getNewUserBonusRemaining() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      
+      // Initialize first install date if not set
+      if (!prefs.containsKey(_firstInstallKey)) {
+        await prefs.setString(_firstInstallKey, DateTime.now().toIso8601String());
+      }
+      
+      final bonusUsed = prefs.getInt(_newUserBonusUsedKey) ?? 0;
+      const bonusLimit = 5; // 5 free premium IDs for new users
+      
+      return (bonusLimit - bonusUsed).clamp(0, bonusLimit);
+    } catch (e) {
+      print('New user bonus check failed: $e');
+      return 0;
+    }
+  }
+
+  /// Records usage of a new user bonus premium identification
+  static Future<void> recordNewUserBonusUsage() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final bonusUsed = prefs.getInt(_newUserBonusUsedKey) ?? 0;
+      await prefs.setInt(_newUserBonusUsedKey, bonusUsed + 1);
+    } catch (e) {
+      print('New user bonus recording failed: $e');
+    }
+  }
+
+  /// Determines which AI model tier to use for current user
+  static Future<IdentificationTier> getIdentificationTier() async {
+    try {
+      final tier = await getCurrentSubscriptionTier();
+      
+      // Pro users get the best models
+      if (tier == SubscriptionConfig.proTier || tier == SubscriptionConfig.foundersTier) {
+        return IdentificationTier.premium;
+      }
+      
+      // Premium users get mid-tier models
+      if (tier == SubscriptionConfig.premiumTier) {
+        return IdentificationTier.enhanced;
+      }
+      
+      // Free users - check if they have bonus premium IDs left
+      final bonusRemaining = await getNewUserBonusRemaining();
+      if (bonusRemaining > 0) {
+        return IdentificationTier.premium; // Give new users premium experience
+      }
+      
+      // Regular free tier users get basic models
+      return IdentificationTier.basic;
+      
+    } catch (e) {
+      print('Identification tier check failed: $e');
+      return IdentificationTier.basic;
+    }
+  }
+
+  /// Checks if user should get high-accuracy identification
+  static Future<bool> shouldUseHighAccuracyModel() async {
+    final identificationTier = await getIdentificationTier();
+    return identificationTier != IdentificationTier.basic;
+  }
+
+  /// Records successful premium identification and manages bonus usage
+  static Future<void> recordPremiumUsage() async {
+    try {
+      // First check if this was a bonus premium ID
+      final bonusRemaining = await getNewUserBonusRemaining();
+      if (bonusRemaining > 0) {
+        await recordNewUserBonusUsage();
+      }
+      
+      // Record standard usage
+      await recordUsage();
+      
+      // Track premium ID usage for analytics
+      final prefs = await SharedPreferences.getInstance();
+      final premiumUsed = prefs.getInt(_premiumIDsUsedKey) ?? 0;
+      await prefs.setInt(_premiumIDsUsedKey, premiumUsed + 1);
+      
+    } catch (e) {
+      print('Premium usage recording failed: $e');
+    }
+  }
+
+  /// Gets days since first install (for new user determination)
+  static Future<int> getDaysSinceInstall() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final firstInstallString = prefs.getString(_firstInstallKey);
+      
+      if (firstInstallString == null) {
+        // First time - set install date
+        await prefs.setString(_firstInstallKey, DateTime.now().toIso8601String());
+        return 0;
+      }
+      
+      final firstInstall = DateTime.parse(firstInstallString);
+      return DateTime.now().difference(firstInstall).inDays;
+    } catch (e) {
+      print('Install date check failed: $e');
+      return 999; // Assume old user if check fails
+    }
+  }
+
+  /// Checks if user is still considered "new" (first 7 days)
+  static Future<bool> isNewUser() async {
+    final daysSinceInstall = await getDaysSinceInstall();
+    return daysSinceInstall <= 7;
+  }
+}
+
+/// Identification quality tiers
+enum IdentificationTier {
+  basic,    // Gemini Flash - free users after bonus used
+  enhanced, // Gemini Pro or GPT-4o-mini - premium users
+  premium,  // GPT-4o or Claude 3.5 - pro users and new user bonus
 }
 
 /// Usage statistics for display and analytics
