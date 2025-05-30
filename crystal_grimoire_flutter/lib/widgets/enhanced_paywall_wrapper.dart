@@ -287,8 +287,14 @@ class _EnhancedPaywallWrapperState extends State<EnhancedPaywallWrapper>
     Navigator.pop(context);
     
     try {
-      final adShown = await AdsService.showRewardedAd();
-      if (adShown) {
+      bool adWatched = false;
+      await AdsService.showRewardedAd(
+        onUserEarnedReward: (amount) {
+          adWatched = true;
+        },
+      );
+      
+      if (adWatched) {
         setState(() {
           _adWatched = true;
           _hasAccess = true;
