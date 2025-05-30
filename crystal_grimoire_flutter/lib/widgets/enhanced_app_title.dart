@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
 import '../config/enhanced_theme.dart';
-import 'custom_crystal_logo.dart';
+import 'gem_symbol_logo.dart';
 
 class EnhancedAppTitle extends StatefulWidget {
   final double fontSize;
@@ -49,15 +49,15 @@ class _EnhancedAppTitleState extends State<EnhancedAppTitle>
       curve: Curves.easeInOut,
     ));
     
-    // Pulse animation - gentler scaling
+    // Pulse animation - very subtle
     _pulseController = AnimationController(
-      duration: const Duration(milliseconds: 2500),
+      duration: const Duration(milliseconds: 4000),
       vsync: this,
     )..repeat(reverse: true);
     
     _pulseAnimation = Tween<double>(
-      begin: 0.95,
-      end: 1.05,
+      begin: 0.98,
+      end: 1.02,
     ).animate(CurvedAnimation(
       parent: _pulseController,
       curve: Curves.easeInOut,
@@ -223,9 +223,14 @@ class _EnhancedAppTitleState extends State<EnhancedAppTitle>
                 ),
               ],
             ),
-            child: const CustomCrystalLogo(
-              size: 80,
+            child: const GemSymbolLogo(
+              size: 100,
               animate: true,
+              colors: [
+                Color(0xFF20B2AA), // Teal
+                Color(0xFFFF4500), // Red
+                Color(0xFFFF8C00), // Orange
+              ],
             ),
           ),
         );

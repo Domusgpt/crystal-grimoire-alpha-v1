@@ -506,6 +506,11 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen>
   Widget _buildMainActionsGrid() {
     return Column(
       children: [
+        // Crystal Identification - Unique UI outside grid
+        _buildCrystalIdentificationCard(),
+        
+        const SizedBox(height: 24),
+        
         // Crystal Gallery - Made bigger (full width)
         _buildActionCard(
           title: 'Crystal Gallery',
@@ -530,16 +535,6 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen>
           physics: const NeverScrollableScrollPhysics(),
           childAspectRatio: 1.1,
           children: [
-            // Crystal Identification
-            _buildActionCard(
-              title: 'Identify Crystal',
-              subtitle: 'Point camera & discover mystical properties instantly',
-              icon: Icons.camera_alt_outlined,
-              gradient: CrystalGrimoireTheme.primaryButtonGradient,
-              onTap: () => _navigateToCamera(),
-              isEnabled: _dailyIdentifications < _dailyLimit,
-            ),
-            
             // Spiritual Journal
             _buildActionCard(
               title: 'Spiritual Journal',
@@ -553,17 +548,7 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen>
               ),
               onTap: () => _navigateToJournal(),
             ),
-          ],
-        ),
-        const SizedBox(height: 16),
-        GridView.count(
-          crossAxisCount: 2,
-          crossAxisSpacing: 16,
-          mainAxisSpacing: 16,
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          childAspectRatio: 1.1,
-          children: [
+            
             // Quick Guide
             _buildActionCard(
               title: 'Quick Guide',
@@ -577,21 +562,22 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen>
               ),
               onTap: () => _showQuickGuide(),
             ),
-            
-            // Settings & Account
-            _buildActionCard(
-              title: 'Account',
-              subtitle: 'Subscription, settings & preferences',
-              icon: Icons.person_outline,
-              gradient: const LinearGradient(
-                colors: [
-                  CrystalGrimoireTheme.moonlightSilver,
-                  CrystalGrimoireTheme.stardustSilver,
-                ],
-              ),
-              onTap: () => _navigateToAccount(),
-            ),
           ],
+        ),
+        const SizedBox(height: 16),
+        
+        // Account - Full width
+        _buildActionCard(
+          title: 'Account & Settings',
+          subtitle: 'Manage your subscription, preferences, and spiritual profile',
+          icon: Icons.person_outline,
+          gradient: const LinearGradient(
+            colors: [
+              CrystalGrimoireTheme.moonlightSilver,
+              CrystalGrimoireTheme.stardustSilver,
+            ],
+          ),
+          onTap: () => _navigateToAccount(),
         ),
       ],
     );
@@ -871,12 +857,14 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen>
                   : null,
               borderRadius: BorderRadius.circular(24),
             ),
-            child: Icon(
-              icon,
-              color: isEnabled 
-                  ? CrystalGrimoireTheme.moonlightWhite
-                  : CrystalGrimoireTheme.stardustSilver.withOpacity(0.5),
-              size: 24,
+            child: Center(
+              child: Icon(
+                icon,
+                color: isEnabled 
+                    ? CrystalGrimoireTheme.moonlightWhite
+                    : CrystalGrimoireTheme.stardustSilver.withOpacity(0.5),
+                size: 24,
+              ),
             ),
           ),
           const SizedBox(height: 12),
@@ -901,6 +889,105 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen>
             textAlign: TextAlign.center,
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildCrystalIdentificationCard() {
+    final isEnabled = _dailyIdentifications < _dailyLimit;
+    
+    return EnhancedMysticalCard(
+      isGlowing: true,
+      glowColor: isEnabled ? CrystalGrimoireTheme.amethyst : CrystalGrimoireTheme.stardustSilver,
+      onTap: isEnabled ? () => _navigateToCamera() : null,
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        child: Row(
+          children: [
+            // Large camera icon with gradient background
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                gradient: isEnabled 
+                    ? CrystalGrimoireTheme.primaryButtonGradient
+                    : LinearGradient(
+                        colors: [
+                          CrystalGrimoireTheme.stardustSilver.withOpacity(0.3),
+                          CrystalGrimoireTheme.stardustSilver.withOpacity(0.5),
+                        ],
+                      ),
+                shape: BoxShape.circle,
+                boxShadow: isEnabled ? [
+                  BoxShadow(
+                    color: CrystalGrimoireTheme.amethyst.withOpacity(0.5),
+                    blurRadius: 20,
+                    spreadRadius: 2,
+                  ),
+                ] : null,
+              ),
+              child: Icon(
+                Icons.camera_alt_rounded,
+                color: isEnabled 
+                    ? Colors.white 
+                    : CrystalGrimoireTheme.stardustSilver.withOpacity(0.7),
+                size: 40,
+              ),
+            ),
+            const SizedBox(width: 20),
+            // Text content
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Crystal Identification',
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: isEnabled 
+                          ? Colors.white 
+                          : CrystalGrimoireTheme.stardustSilver.withOpacity(0.5),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    isEnabled 
+                        ? 'Point your camera at any crystal for instant AI-powered identification and metaphysical insights'
+                        : 'Daily limit reached. Upgrade for unlimited identifications!',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: isEnabled 
+                          ? CrystalGrimoireTheme.stardustSilver.withOpacity(0.9)
+                          : CrystalGrimoireTheme.stardustSilver.withOpacity(0.5),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  // Usage indicator
+                  Row(
+                    children: [
+                      Icon(
+                        isEnabled ? Icons.check_circle : Icons.block,
+                        color: isEnabled 
+                            ? CrystalGrimoireTheme.successGreen 
+                            : CrystalGrimoireTheme.errorRed,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        '${_dailyLimit - _dailyIdentifications} identifications remaining today',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: isEnabled 
+                              ? CrystalGrimoireTheme.successGreen
+                              : CrystalGrimoireTheme.errorRed,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
