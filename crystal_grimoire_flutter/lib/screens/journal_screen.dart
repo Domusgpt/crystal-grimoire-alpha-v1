@@ -32,17 +32,16 @@ class _JournalScreenState extends State<JournalScreen> with TickerProviderStateM
   // Color schemes for different sections
   static const Map<int, List<Color>> _sectionColors = {
     0: [Color(0xFF6B46C1), Color(0xFF8B5CF6), Color(0xFFA78BFA)], // Purple - Journal
-    1: [Color(0xFFEC4899), Color(0xFFF472B6), Color(0xFFFBBF24)], // Pink/Gold - Collection
-    2: [Color(0xFF0EA5E9), Color(0xFF3B82F6), Color(0xFF6366F1)], // Blue - Insights
-    3: [Color(0xFF059669), Color(0xFF10B981), Color(0xFF34D399)], // Green - Progress
-    4: [Color(0xFF7C3AED), Color(0xFF8B5CF6), Color(0xFFA855F7)], // Purple - Rituals
-    5: [Color(0xFFDC2626), Color(0xFFEF4444), Color(0xFFF87171)], // Red - Goals
+    1: [Color(0xFF0EA5E9), Color(0xFF3B82F6), Color(0xFF6366F1)], // Blue - Insights
+    2: [Color(0xFF059669), Color(0xFF10B981), Color(0xFF34D399)], // Green - Progress
+    3: [Color(0xFF7C3AED), Color(0xFF8B5CF6), Color(0xFFA855F7)], // Purple - Rituals
+    4: [Color(0xFFDC2626), Color(0xFFEF4444), Color(0xFFF87171)], // Red - Goals
   };
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 6, vsync: this);
+    _tabController = TabController(length: 5, vsync: this);
     
     // Initialize animation controllers
     _parallaxController = AnimationController(
@@ -107,7 +106,6 @@ class _JournalScreenState extends State<JournalScreen> with TickerProviderStateM
                           controller: _tabController,
                           children: [
                             _buildJournalView(),
-                            _buildCollectionView(),
                             _buildInsightsView(),
                             _buildProgressView(),
                             _buildRitualsView(),
@@ -318,7 +316,6 @@ class _JournalScreenState extends State<JournalScreen> with TickerProviderStateM
             ),
             tabs: [
               _buildAnimatedTab('Journal', Icons.book),
-              _buildAnimatedTab('Collection', Icons.diamond, isPremium: true),
               _buildAnimatedTab('Insights', Icons.insights),
               _buildAnimatedTab('Progress', Icons.trending_up, isPremium: true),
               _buildAnimatedTab('Rituals', Icons.spa, isPremium: true),

@@ -6,11 +6,13 @@ import '../models/birth_chart.dart';
 import '../services/collection_service.dart';
 import '../services/astrology_service.dart';
 import '../services/backend_service.dart';
+import '../services/storage_service.dart';
 import '../config/theme.dart';
 import '../config/mystical_theme.dart';
 import '../widgets/common/mystical_card.dart';
 import '../widgets/common/mystical_button.dart';
 import '../widgets/animations/mystical_animations.dart';
+import 'llm_lab_screen.dart';
 
 class MetaphysicalGuidanceScreen extends StatefulWidget {
   const MetaphysicalGuidanceScreen({Key? key}) : super(key: key);
@@ -28,6 +30,10 @@ class _MetaphysicalGuidanceScreenState extends State<MetaphysicalGuidanceScreen>
   bool _isLoading = false;
   String? _currentGuidance;
   Map<String, dynamic>? _userProfile;
+  final TextEditingController _queryController = TextEditingController();
+  List<String> _selectedCrystals = [];
+  int _dailyQueriesUsed = 0;
+  int _dailyQueryLimit = 5; // For Pro tier
 
   final List<String> _guidanceTypes = [
     'daily',
@@ -55,6 +61,7 @@ class _MetaphysicalGuidanceScreenState extends State<MetaphysicalGuidanceScreen>
     )..repeat(reverse: true);
     
     _loadUserProfile();
+    _loadQueryLimits();
   }
 
   @override
@@ -62,6 +69,7 @@ class _MetaphysicalGuidanceScreenState extends State<MetaphysicalGuidanceScreen>
     _tabController.dispose();
     _parallaxController.dispose();
     _floatingController.dispose();
+    _queryController.dispose();
     super.dispose();
   }
 
@@ -91,8 +99,34 @@ class _MetaphysicalGuidanceScreenState extends State<MetaphysicalGuidanceScreen>
     });
   }
 
+  Future<void> _loadQueryLimits() async {
+    final queriesUsed = await StorageService.getDailyMetaphysicalQueries();
+    final queryLimit = await StorageService.getMetaphysicalQueryLimit();
+    
+    setState(() {
+      _dailyQueriesUsed = queriesUsed;
+      _dailyQueryLimit = queryLimit == -1 ? 0 : queryLimit; // 0 means unlimited for display
+    });
+  }
+
   Future<void> _getPersonalizedGuidance() async {
     if (_isLoading || _userProfile == null) return;
+    
+    // Check if user can make queries
+    final canQuery = await StorageService.canMakeMetaphysicalQuery();
+    if (!canQuery) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            _dailyQueryLimit == 0 
+              ? 'Upgrade to Pro or Founders to access metaphysical guidance'
+              : 'Daily query limit reached. Upgrade to Founders for unlimited access.',
+          ),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
     
     setState(() {
       _isLoading = true;
@@ -100,15 +134,25 @@ class _MetaphysicalGuidanceScreenState extends State<MetaphysicalGuidanceScreen>
     });
 
     try {
-      // Create a personalized prompt based on user's data
-      final prompt = _buildPersonalizedPrompt(_selectedGuidanceType);
+      // Include selected crystals in the prompt
+      String finalPrompt = _buildPersonalizedPrompt(_selectedGuidanceType);
+      if (_selectedCrystals.isNotEmpty) {
+        finalPrompt += '\n\nSPECIFIC CRYSTALS TO FOCUS ON: ${_selectedCrystals.join(', ')}';
+      }
+      if (_queryController.text.isNotEmpty) {
+        finalPrompt += '\n\nUSER QUESTION: ${_queryController.text}';
+      }
       
       // Use the backend's LLM integration for personalized guidance
       final response = await BackendService.getPersonalizedGuidance(
         guidanceType: _selectedGuidanceType,
         userProfile: _userProfile!,
-        customPrompt: prompt,
+        customPrompt: finalPrompt,
       );
+
+      // Track the query usage
+      await StorageService.incrementMetaphysicalQueries();
+      await _loadQueryLimits(); // Refresh the display
 
       setState(() {
         _currentGuidance = response['guidance'] ?? 'Unable to provide guidance at this time.';
@@ -272,21 +316,105 @@ Provide intuitive insights about their spiritual journey:
               ],
             ),
           ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Colors.amber, Colors.orange],
-              ),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: const Text(
-              'PREMIUM',
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
-              ),
+          GestureDetector(
+            onLongPress: () async {
+              // Dev feature: Long press to enable founders account
+              final isFoundersEnabled = await StorageService.isFoundersAccountEnabled();
+              
+              if (!isFoundersEnabled) {
+                await StorageService.enableFoundersAccount();
+                await _loadQueryLimits();
+                
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('🎉 Founders Dev Account Enabled!'),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+              } else {
+                await StorageService.disableFoundersAccount();
+                await _loadQueryLimits();
+                
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Founders Account Disabled'),
+                    backgroundColor: Colors.orange,
+                  ),
+                );
+              }
+            },
+            child: Row(
+              children: [
+                // LLM Lab button for founders
+                FutureBuilder<bool>(
+                  future: StorageService.isFoundersAccountEnabled(),
+                  builder: (context, snapshot) {
+                    final isFounders = snapshot.data ?? false;
+                    if (isFounders) {
+                      return GestureDetector(
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const LLMLabScreen(),
+                          ),
+                        ),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          margin: const EdgeInsets.only(right: 8),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [Colors.deepPurple, Colors.indigo],
+                            ),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.science, size: 14, color: Colors.white),
+                              SizedBox(width: 4),
+                              Text(
+                                'LAB',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }
+                    return const SizedBox.shrink();
+                  },
+                ),
+                // Premium/Founders badge
+                FutureBuilder<bool>(
+                  future: StorageService.isFoundersAccountEnabled(),
+                  builder: (context, snapshot) {
+                    final isFounders = snapshot.data ?? false;
+                    return Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: isFounders 
+                            ? [const Color(0xFFFFD700), Colors.amber]
+                            : [Colors.amber, Colors.orange],
+                        ),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        isFounders ? 'FOUNDERS' : 'PREMIUM',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ],
             ),
           ),
         ],
@@ -350,7 +478,106 @@ Provide intuitive insights about their spiritual journey:
               ),
               const SizedBox(height: 16),
               _buildGuidanceTypeSelector(),
+              const SizedBox(height: 20),
+              
+              // Query input field
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.05),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.white.withOpacity(0.2)),
+                ),
+                child: TextField(
+                  controller: _queryController,
+                  maxLength: 500,
+                  maxLines: 4,
+                  style: const TextStyle(color: Colors.white),
+                  decoration: InputDecoration(
+                    hintText: 'Ask your spiritual question or describe what guidance you seek...',
+                    hintStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
+                    contentPadding: const EdgeInsets.all(16),
+                    border: InputBorder.none,
+                    counterStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
+                  ),
+                ),
+              ),
               const SizedBox(height: 16),
+              
+              // Crystal selector
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(Icons.diamond, size: 16, color: Colors.purple[300]),
+                      const SizedBox(width: 8),
+                      const Text(
+                        'Select crystals from your collection:',
+                        style: TextStyle(color: Colors.white70, fontSize: 14),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  _buildCrystalSelector(),
+                ],
+              ),
+              const SizedBox(height: 20),
+              
+              // Quick action buttons
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  _buildQuickActionButton(
+                    'Daily Horoscope',
+                    Icons.stars,
+                    () => _quickAction('horoscope'),
+                  ),
+                  _buildQuickActionButton(
+                    'Crystal Meditation',
+                    Icons.self_improvement,
+                    () => _quickAction('meditation'),
+                  ),
+                  _buildQuickActionButton(
+                    'Moon Phase Ritual',
+                    Icons.nightlight_round,
+                    () => _quickAction('moon_ritual'),
+                  ),
+                  _buildQuickActionButton(
+                    'Chakra Balance',
+                    Icons.motion_photos_on,
+                    () => _quickAction('chakra'),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              
+              // Query usage indicator
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.purple.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.purple.withOpacity(0.3)),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.info_outline, size: 16, color: Colors.purple[300]),
+                    const SizedBox(width: 8),
+                    Text(
+                      _dailyQueryLimit == 0
+                        ? 'Queries today: $_dailyQueriesUsed (Unlimited)'
+                        : 'Queries today: $_dailyQueriesUsed / $_dailyQueryLimit',
+                      style: TextStyle(
+                        color: Colors.purple[300],
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              
               _isLoading
                 ? Container(
                     height: 56,
@@ -589,5 +816,177 @@ Provide intuitive insights about their spiritual journey:
         );
       },
     );
+  }
+
+  Widget _buildCrystalSelector() {
+    final collection = CollectionService.collection;
+    
+    if (collection.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.05),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.white.withOpacity(0.2)),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.info_outline, size: 16, color: Colors.white.withOpacity(0.5)),
+            const SizedBox(width: 8),
+            Text(
+              'No crystals in collection yet',
+              style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12),
+            ),
+          ],
+        ),
+      );
+    }
+    
+    return Container(
+      height: 80,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: collection.length,
+        itemBuilder: (context, index) {
+          final entry = collection[index];
+          final isSelected = _selectedCrystals.contains(entry.crystal.name);
+          
+          return GestureDetector(
+            onTap: () {
+              setState(() {
+                if (isSelected) {
+                  _selectedCrystals.remove(entry.crystal.name);
+                } else {
+                  if (_selectedCrystals.length < 3) {
+                    _selectedCrystals.add(entry.crystal.name);
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Maximum 3 crystals can be selected'),
+                        duration: Duration(seconds: 2),
+                      ),
+                    );
+                  }
+                }
+              });
+            },
+            child: Container(
+              width: 70,
+              margin: const EdgeInsets.only(right: 8),
+              decoration: BoxDecoration(
+                color: isSelected 
+                  ? Colors.purple.withOpacity(0.3)
+                  : Colors.white.withOpacity(0.05),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: isSelected 
+                    ? Colors.purple
+                    : Colors.white.withOpacity(0.2),
+                  width: isSelected ? 2 : 1,
+                ),
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.diamond,
+                    size: 24,
+                    color: isSelected ? Colors.purple : Colors.white.withOpacity(0.7),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    entry.crystal.name,
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: isSelected ? Colors.purple : Colors.white.withOpacity(0.7),
+                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
+                  ),
+                  if (isSelected)
+                    Container(
+                      margin: const EdgeInsets.only(top: 4),
+                      width: 6,
+                      height: 6,
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.purple,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildQuickActionButton(String label, IconData icon, VoidCallback onTap) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.05),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.white.withOpacity(0.2)),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 18, color: Colors.white),
+              const SizedBox(width: 8),
+              Text(
+                label,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _quickAction(String action) {
+    String quickPrompt = '';
+    String guidanceType = '';
+    
+    switch (action) {
+      case 'horoscope':
+        quickPrompt = 'Please provide my daily horoscope based on my birth chart and current crystal collection. Include specific crystal recommendations for today.';
+        guidanceType = 'daily';
+        break;
+      case 'meditation':
+        quickPrompt = 'Suggest a crystal meditation practice for today. Include which crystals from my collection to use and step-by-step instructions.';
+        guidanceType = 'crystal_selection';
+        break;
+      case 'moon_ritual':
+        quickPrompt = 'What moon phase ritual should I perform today? Include crystal recommendations from my collection and ritual instructions.';
+        guidanceType = 'lunar_guidance';
+        break;
+      case 'chakra':
+        quickPrompt = 'Analyze my chakra balance based on my crystal collection and provide a balancing session using my crystals.';
+        guidanceType = 'chakra_balancing';
+        break;
+    }
+    
+    // Set the query and guidance type
+    setState(() {
+      _queryController.text = quickPrompt;
+      _selectedGuidanceType = guidanceType;
+    });
+    
+    // Automatically submit the query
+    _getPersonalizedGuidance();
   }
 }

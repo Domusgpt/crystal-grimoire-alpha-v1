@@ -77,7 +77,7 @@ class SubscriptionConfig {
   
   // Pricing
   static const Map<String, double> monthlyPrices = {
-    premiumTier: 9.99,
+    premiumTier: 8.99,
     proTier: 19.99,
   };
   
