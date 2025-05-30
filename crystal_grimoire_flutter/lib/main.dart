@@ -18,15 +18,12 @@ import 'config/enhanced_theme.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-  // Initialize Firebase (skip for web in development)
+  // Initialize Firebase for all platforms
   try {
-    if (!UniversalPlatform.isWeb) {
-      await Firebase.initializeApp(
-        options: DefaultFirebaseOptions.currentPlatform,
-      );
-    } else {
-      print('Firebase disabled for web demo');
-    }
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+    print('Firebase initialized successfully');
   } catch (e) {
     print('Firebase initialization failed: $e');
   }
