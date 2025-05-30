@@ -109,7 +109,7 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen>
                 slivers: [
                   // Enhanced App bar with logo
                   SliverAppBar(
-                    expandedHeight: 200,
+                    expandedHeight: 260,
                     floating: true,
                     backgroundColor: Colors.transparent,
                     elevation: 0,
@@ -117,7 +117,7 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen>
                       title: Padding(
                         padding: EdgeInsets.only(bottom: 20),
                         child: EnhancedAppTitle(
-                          fontSize: 36,
+                          fontSize: 52,
                           showLogo: true,
                         ),
                       ),

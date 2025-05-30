@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
 import '../config/enhanced_theme.dart';
-import 'animations/enhanced_animations.dart';
 
 class EnhancedAppTitle extends StatefulWidget {
   final double fontSize;
@@ -9,7 +8,7 @@ class EnhancedAppTitle extends StatefulWidget {
   
   const EnhancedAppTitle({
     Key? key,
-    this.fontSize = 42,
+    this.fontSize = 48,
     this.showLogo = true,
   }) : super(key: key);
 
@@ -29,38 +28,38 @@ class _EnhancedAppTitleState extends State<EnhancedAppTitle>
   void initState() {
     super.initState();
     
-    // Sparkle animation
+    // Sparkle animation - faster and more dramatic
     _sparkleController = AnimationController(
-      duration: const Duration(seconds: 3),
+      duration: const Duration(seconds: 2),
       vsync: this,
     )..repeat();
     
-    // Color shift animation
+    // Color shift animation - more dramatic color changes
     _colorController = AnimationController(
-      duration: const Duration(seconds: 5),
+      duration: const Duration(seconds: 3),
       vsync: this,
     )..repeat(reverse: true);
     
     _colorAnimation = ColorTween(
-      begin: CrystalGrimoireTheme.etherealBlue,
+      begin: CrystalGrimoireTheme.amethyst,
       end: CrystalGrimoireTheme.celestialGold,
     ).animate(CurvedAnimation(
       parent: _colorController,
-      curve: Curves.easeInOut,
+      curve: Curves.elasticInOut,
     ));
     
-    // Pulse animation
+    // Pulse animation - more dramatic scaling
     _pulseController = AnimationController(
-      duration: const Duration(seconds: 2),
+      duration: const Duration(milliseconds: 1500),
       vsync: this,
     )..repeat(reverse: true);
     
     _pulseAnimation = Tween<double>(
-      begin: 1.0,
-      end: 1.1,
+      begin: 0.9,
+      end: 1.2,
     ).animate(CurvedAnimation(
       parent: _pulseController,
-      curve: Curves.easeInOut,
+      curve: Curves.elasticInOut,
     ));
   }
 
@@ -96,40 +95,65 @@ class _EnhancedAppTitleState extends State<EnhancedAppTitle>
                 child: Stack(
                   alignment: Alignment.center,
                   children: [
-                    // Glow effect
+                    // Outer glow effect - much more dramatic
                     Text(
                       'Crystal Grimoire',
                       style: TextStyle(
                         fontSize: widget.fontSize,
                         fontWeight: FontWeight.w900,
-                        fontFamily: 'Cinzel', // Mystical font
-                        letterSpacing: 3.0,
+                        fontFamily: 'serif',
+                        letterSpacing: 4.0,
                         foreground: Paint()
                           ..style = PaintingStyle.stroke
-                          ..strokeWidth = 3
-                          ..color = Colors.white.withOpacity(0.3)
-                          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10),
+                          ..strokeWidth = 8
+                          ..color = _colorAnimation.value!.withOpacity(0.8)
+                          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 30),
                       ),
                     ),
-                    // Main text
+                    // Middle glow
                     Text(
                       'Crystal Grimoire',
                       style: TextStyle(
                         fontSize: widget.fontSize,
                         fontWeight: FontWeight.w900,
-                        fontFamily: 'Cinzel',
-                        letterSpacing: 3.0,
+                        fontFamily: 'serif',
+                        letterSpacing: 4.0,
+                        foreground: Paint()
+                          ..style = PaintingStyle.stroke
+                          ..strokeWidth = 4
+                          ..color = Colors.white.withOpacity(0.9)
+                          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 15),
+                      ),
+                    ),
+                    // Main text with dramatic shadows
+                    Text(
+                      'Crystal Grimoire',
+                      style: TextStyle(
+                        fontSize: widget.fontSize,
+                        fontWeight: FontWeight.w900,
+                        fontFamily: 'serif',
+                        letterSpacing: 4.0,
                         color: Colors.white,
                         shadows: [
                           Shadow(
-                            color: _colorAnimation.value!.withOpacity(0.5),
-                            blurRadius: 20,
-                            offset: const Offset(0, 2),
+                            color: _colorAnimation.value!,
+                            blurRadius: 25,
+                            offset: const Offset(0, 3),
+                          ),
+                          Shadow(
+                            color: CrystalGrimoireTheme.amethyst.withOpacity(0.8),
+                            blurRadius: 15,
+                            offset: const Offset(-2, -2),
+                          ),
+                          Shadow(
+                            color: CrystalGrimoireTheme.celestialGold.withOpacity(0.6),
+                            blurRadius: 10,
+                            offset: const Offset(2, 2),
                           ),
                           const Shadow(
                             color: CrystalGrimoireTheme.deepSpace,
-                            blurRadius: 10,
-                            offset: Offset(0, 4),
+                            blurRadius: 5,
+                            offset: Offset(0, 6),
                           ),
                         ],
                       ),
@@ -142,9 +166,9 @@ class _EnhancedAppTitleState extends State<EnhancedAppTitle>
         ),
         
         if (widget.showLogo) ...[
-          const SizedBox(height: 12),
-          // Animated gemstone logo
-          _buildAnimatedGemstone(),
+          const SizedBox(height: 16),
+          // Classic diamond emoji with dramatic effects
+          _buildClassicDiamondLogo(),
         ],
         
         // Sparkle overlay
@@ -168,7 +192,77 @@ class _EnhancedAppTitleState extends State<EnhancedAppTitle>
     );
   }
 
-  Widget _buildAnimatedGemstone() {
+  Widget _buildClassicDiamondLogo() {
+    return AnimatedBuilder(
+      animation: Listenable.merge([_sparkleController, _colorAnimation, _pulseAnimation]),
+      builder: (context, child) {
+        return Transform.scale(
+          scale: _pulseAnimation.value,
+          child: Transform.rotate(
+            angle: _sparkleController.value * 2 * math.pi * 0.05, // Gentle rotation
+            child: Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(
+                  colors: [
+                    _colorAnimation.value!.withOpacity(0.1),
+                    _colorAnimation.value!.withOpacity(0.3),
+                    Colors.transparent,
+                  ],
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: _colorAnimation.value!.withOpacity(0.6),
+                    blurRadius: 40,
+                    spreadRadius: 10,
+                  ),
+                  BoxShadow(
+                    color: Colors.white.withOpacity(0.3),
+                    blurRadius: 20,
+                    spreadRadius: 5,
+                  ),
+                ],
+              ),
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  // Outer glow for emoji
+                  Text(
+                    '💎',
+                    style: TextStyle(
+                      fontSize: 80,
+                      shadows: [
+                        Shadow(
+                          color: _colorAnimation.value!,
+                          blurRadius: 30,
+                          offset: const Offset(0, 0),
+                        ),
+                        Shadow(
+                          color: Colors.white.withOpacity(0.8),
+                          blurRadius: 15,
+                          offset: const Offset(0, 0),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Main diamond emoji
+                  const Text(
+                    '💎',
+                    style: TextStyle(
+                      fontSize: 80,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildOldAnimatedGemstone() {
     return AnimatedBuilder(
       animation: _sparkleController,
       builder: (context, child) {
