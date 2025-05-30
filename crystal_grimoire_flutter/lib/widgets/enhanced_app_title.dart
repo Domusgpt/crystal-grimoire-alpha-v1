@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
 import '../config/enhanced_theme.dart';
+import 'custom_crystal_logo.dart';
 
 class EnhancedAppTitle extends StatefulWidget {
   final double fontSize;
@@ -198,63 +199,33 @@ class _EnhancedAppTitleState extends State<EnhancedAppTitle>
       builder: (context, child) {
         return Transform.scale(
           scale: _pulseAnimation.value,
-          child: Transform.rotate(
-            angle: _sparkleController.value * 2 * math.pi * 0.05, // Gentle rotation
-            child: Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: RadialGradient(
-                  colors: [
-                    _colorAnimation.value!.withOpacity(0.1),
-                    _colorAnimation.value!.withOpacity(0.3),
-                    Colors.transparent,
-                  ],
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: RadialGradient(
+                colors: [
+                  _colorAnimation.value!.withOpacity(0.1),
+                  _colorAnimation.value!.withOpacity(0.3),
+                  Colors.transparent,
+                ],
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: _colorAnimation.value!.withOpacity(0.6),
+                  blurRadius: 40,
+                  spreadRadius: 10,
                 ),
-                boxShadow: [
-                  BoxShadow(
-                    color: _colorAnimation.value!.withOpacity(0.6),
-                    blurRadius: 40,
-                    spreadRadius: 10,
-                  ),
-                  BoxShadow(
-                    color: Colors.white.withOpacity(0.3),
-                    blurRadius: 20,
-                    spreadRadius: 5,
-                  ),
-                ],
-              ),
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  // Outer glow for emoji
-                  Text(
-                    '💎',
-                    style: TextStyle(
-                      fontSize: 80,
-                      shadows: [
-                        Shadow(
-                          color: _colorAnimation.value!,
-                          blurRadius: 30,
-                          offset: const Offset(0, 0),
-                        ),
-                        Shadow(
-                          color: Colors.white.withOpacity(0.8),
-                          blurRadius: 15,
-                          offset: const Offset(0, 0),
-                        ),
-                      ],
-                    ),
-                  ),
-                  // Main diamond emoji
-                  const Text(
-                    '💎',
-                    style: TextStyle(
-                      fontSize: 80,
-                    ),
-                  ),
-                ],
-              ),
+                BoxShadow(
+                  color: Colors.white.withOpacity(0.3),
+                  blurRadius: 20,
+                  spreadRadius: 5,
+                ),
+              ],
+            ),
+            child: const CustomCrystalLogo(
+              size: 80,
+              animate: true,
             ),
           ),
         );
