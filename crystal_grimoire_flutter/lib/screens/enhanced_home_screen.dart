@@ -16,6 +16,13 @@ import 'auth_account_screen.dart';
 import 'llm_lab_screen.dart';
 import 'crystal_gallery_screen.dart';
 import '../widgets/daily_crystal_card.dart';
+import 'crystal_ai_oracle.dart';
+import 'dream_journal_analyzer.dart';
+import 'crystal_marketplace.dart';
+import 'meditation_sound_bath.dart';
+import 'astro_crystal_matcher.dart';
+import 'crystal_energy_healing.dart';
+import 'moon_ritual_planner.dart';
 
 class EnhancedHomeScreen extends StatefulWidget {
   const EnhancedHomeScreen({Key? key}) : super(key: key);
@@ -169,6 +176,8 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen>
                             _buildMainActionsGrid(),
                             const SizedBox(height: 24),
                             _buildPremiumActionsGrid(),
+                            const SizedBox(height: 24),
+                            _buildUltimateActionsGrid(),
                             const SizedBox(height: 32),
                             _buildQuickActions(),
                           ],
@@ -389,6 +398,161 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen>
             onTap: () => _navigateToGuidance(),
             isPremium: true,
           ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildUltimateActionsGrid() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          '✨ ULTIMATE Features',
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+            fontWeight: FontWeight.bold,
+            color: CrystalGrimoireTheme.celestialGold,
+          ),
+        ),
+        const SizedBox(height: 16),
+        
+        // First row of ULTIMATE features
+        GridView.count(
+          crossAxisCount: 2,
+          crossAxisSpacing: 16,
+          mainAxisSpacing: 16,
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          childAspectRatio: 1.1,
+          children: [
+            // Crystal AI Oracle
+            _buildActionCard(
+              title: 'AI Oracle',
+              subtitle: 'Crystal readings',
+              icon: Icons.psychology_alt_outlined,
+              gradient: const LinearGradient(
+                colors: [
+                  CrystalGrimoireTheme.cosmicViolet,
+                  CrystalGrimoireTheme.mysticPurple,
+                ],
+              ),
+              onTap: () => _navigateToOracle(),
+              isPremium: true,
+            ),
+            
+            // Moon Ritual Planner
+            _buildActionCard(
+              title: 'Moon Rituals',
+              subtitle: 'Lunar magic',
+              icon: Icons.brightness_3,
+              gradient: const LinearGradient(
+                colors: [
+                  CrystalGrimoireTheme.moonlightSilver,
+                  CrystalGrimoireTheme.etherealBlue,
+                ],
+              ),
+              onTap: () => _navigateToMoonRituals(),
+              isPremium: true,
+            ),
+          ],
+        ),
+        
+        const SizedBox(height: 16),
+        
+        // Second row
+        GridView.count(
+          crossAxisCount: 2,
+          crossAxisSpacing: 16,
+          mainAxisSpacing: 16,
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          childAspectRatio: 1.1,
+          children: [
+            // Dream Journal
+            _buildActionCard(
+              title: 'Dream Journal',
+              subtitle: 'Crystal dreams',
+              icon: Icons.nights_stay_outlined,
+              gradient: const LinearGradient(
+                colors: [
+                  CrystalGrimoireTheme.amethyst,
+                  CrystalGrimoireTheme.deepSpace,
+                ],
+              ),
+              onTap: () => _navigateToDreamJournal(),
+              isPremium: true,
+            ),
+            
+            // Energy Healing
+            _buildActionCard(
+              title: 'Energy Healing',
+              subtitle: 'Chakra balance',
+              icon: Icons.healing_outlined,
+              gradient: const LinearGradient(
+                colors: [
+                  CrystalGrimoireTheme.successGreen,
+                  CrystalGrimoireTheme.etherealBlue,
+                ],
+              ),
+              onTap: () => _navigateToEnergyHealing(),
+              isPremium: true,
+            ),
+          ],
+        ),
+        
+        const SizedBox(height: 16),
+        
+        // Third row
+        GridView.count(
+          crossAxisCount: 2,
+          crossAxisSpacing: 16,
+          mainAxisSpacing: 16,
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          childAspectRatio: 1.1,
+          children: [
+            // Astro Crystal Matcher
+            _buildActionCard(
+              title: 'Astro Crystals',
+              subtitle: 'Birth chart gems',
+              icon: Icons.star_outline,
+              gradient: const LinearGradient(
+                colors: [
+                  CrystalGrimoireTheme.celestialGold,
+                  CrystalGrimoireTheme.warningAmber,
+                ],
+              ),
+              onTap: () => _navigateToAstroMatcher(),
+              isPremium: true,
+            ),
+            
+            // Meditation Sound Bath
+            _buildActionCard(
+              title: 'Sound Bath',
+              subtitle: 'Crystal frequencies',
+              icon: Icons.music_note_outlined,
+              gradient: const LinearGradient(
+                colors: [
+                  CrystalGrimoireTheme.crystalRose,
+                  CrystalGrimoireTheme.amethyst,
+                ],
+              ),
+              onTap: () => _navigateToSoundBath(),
+              isPremium: true,
+            ),
+          ],
+        ),
+        
+        const SizedBox(height: 16),
+        
+        // Crystal Marketplace (full width)
+        _buildActionCard(
+          title: 'Crystal Marketplace',
+          subtitle: 'Find authentic crystals & connect with sellers',
+          icon: Icons.shopping_bag_outlined,
+          gradient: CrystalGrimoireTheme.premiumGradient,
+          onTap: () => _navigateToMarketplace(),
+          isPremium: true,
         ),
       ],
     );
@@ -763,6 +927,148 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen>
             ),
           ),
         ],
+      ),
+    );
+  }
+  
+  // ULTIMATE Feature Navigation Methods
+  void _navigateToOracle() {
+    Navigator.push(
+      context,
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) => const CrystalAIOracleScreen(),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return FadeTransition(
+            opacity: animation,
+            child: ScaleTransition(
+              scale: Tween<double>(
+                begin: 0.9,
+                end: 1.0,
+              ).animate(CurvedAnimation(
+                parent: animation,
+                curve: Curves.easeOutCubic,
+              )),
+              child: child,
+            ),
+          );
+        },
+      ),
+    );
+  }
+  
+  void _navigateToMoonRituals() {
+    Navigator.push(
+      context,
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) => const MoonRitualPlannerScreen(),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return SlideTransition(
+            position: Tween<Offset>(
+              begin: const Offset(0.0, -1.0),
+              end: Offset.zero,
+            ).animate(CurvedAnimation(
+              parent: animation,
+              curve: Curves.easeOutCubic,
+            )),
+            child: child,
+          );
+        },
+      ),
+    );
+  }
+  
+  void _navigateToDreamJournal() {
+    Navigator.push(
+      context,
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) => const DreamJournalAnalyzer(),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return FadeTransition(
+            opacity: animation,
+            child: child,
+          );
+        },
+      ),
+    );
+  }
+  
+  void _navigateToEnergyHealing() {
+    Navigator.push(
+      context,
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) => const CrystalEnergyHealingScreen(),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return SlideTransition(
+            position: Tween<Offset>(
+              begin: const Offset(1.0, 0.0),
+              end: Offset.zero,
+            ).animate(animation),
+            child: child,
+          );
+        },
+      ),
+    );
+  }
+  
+  void _navigateToAstroMatcher() {
+    Navigator.push(
+      context,
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) => const AstroCrystalMatcher(),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return ScaleTransition(
+            scale: Tween<double>(
+              begin: 0.5,
+              end: 1.0,
+            ).animate(CurvedAnimation(
+              parent: animation,
+              curve: Curves.easeOutBack,
+            )),
+            child: child,
+          );
+        },
+      ),
+    );
+  }
+  
+  void _navigateToSoundBath() {
+    Navigator.push(
+      context,
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) => MeditationSoundBathScreen(),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return FadeTransition(
+            opacity: animation,
+            child: SlideTransition(
+              position: Tween<Offset>(
+                begin: const Offset(0.0, 0.3),
+                end: Offset.zero,
+              ).animate(animation),
+              child: child,
+            ),
+          );
+        },
+      ),
+    );
+  }
+  
+  void _navigateToMarketplace() {
+    Navigator.push(
+      context,
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) => const CrystalMarketplace(),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return SlideTransition(
+            position: Tween<Offset>(
+              begin: const Offset(-1.0, 0.0),
+              end: Offset.zero,
+            ).animate(CurvedAnimation(
+              parent: animation,
+              curve: Curves.easeOutCubic,
+            )),
+            child: child,
+          );
+        },
       ),
     );
   }

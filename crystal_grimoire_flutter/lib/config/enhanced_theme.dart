@@ -10,6 +10,7 @@ class CrystalGrimoireTheme {
   static const Color amethyst = Color(0xFF9333EA);
   static const Color cosmicViolet = Color(0xFFA855F7);
   static const Color stardustSilver = Color(0xFFE2E8F0);
+  static const Color moonlightSilver = Color(0xFFE5E7EB);
   static const Color moonlightWhite = Color(0xFFF8FAFC);
   static const Color celestialGold = Color(0xFFFFD700);
   static const Color etherealBlue = Color(0xFF3B82F6);

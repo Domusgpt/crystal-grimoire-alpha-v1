@@ -330,6 +330,10 @@ class CrystalDatabase {
     ),
   ];
 
+  static List<CrystalData> getAllCrystals() {
+    return crystals;
+  }
+
   static CrystalData? getCrystalById(String id) {
     try {
       return crystals.firstWhere((crystal) => crystal.id == id);

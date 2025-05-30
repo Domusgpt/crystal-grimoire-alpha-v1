@@ -6,6 +6,12 @@
 
 #import "GeneratedPluginRegistrant.h"
 
+#if __has_include(<audioplayers_darwin/AudioplayersDarwinPlugin.h>)
+#import <audioplayers_darwin/AudioplayersDarwinPlugin.h>
+#else
+@import audioplayers_darwin;
+#endif
+
 #if __has_include(<camera_avfoundation/CameraPlugin.h>)
 #import <camera_avfoundation/CameraPlugin.h>
 #else
@@ -28,12 +34,6 @@
 #import <firebase_core/FLTFirebaseCorePlugin.h>
 #else
 @import firebase_core;
-#endif
-
-#if __has_include(<firebase_dynamic_links/FLTFirebaseDynamicLinksPlugin.h>)
-#import <firebase_dynamic_links/FLTFirebaseDynamicLinksPlugin.h>
-#else
-@import firebase_dynamic_links;
 #endif
 
 #if __has_include(<firebase_storage/FLTFirebaseStoragePlugin.h>)
@@ -66,10 +66,22 @@
 @import path_provider_foundation;
 #endif
 
+#if __has_include(<permission_handler_apple/PermissionHandlerPlugin.h>)
+#import <permission_handler_apple/PermissionHandlerPlugin.h>
+#else
+@import permission_handler_apple;
+#endif
+
 #if __has_include(<purchases_flutter/PurchasesFlutterPlugin.h>)
 #import <purchases_flutter/PurchasesFlutterPlugin.h>
 #else
 @import purchases_flutter;
+#endif
+
+#if __has_include(<record_darwin/RecordPlugin.h>)
+#import <record_darwin/RecordPlugin.h>
+#else
+@import record_darwin;
 #endif
 
 #if __has_include(<shared_preferences_foundation/SharedPreferencesPlugin.h>)
@@ -111,17 +123,19 @@
 @implementation GeneratedPluginRegistrant
 
 + (void)registerWithRegistry:(NSObject<FlutterPluginRegistry>*)registry {
+  [AudioplayersDarwinPlugin registerWithRegistrar:[registry registrarForPlugin:@"AudioplayersDarwinPlugin"]];
   [CameraPlugin registerWithRegistrar:[registry registrarForPlugin:@"CameraPlugin"]];
   [FLTFirebaseFirestorePlugin registerWithRegistrar:[registry registrarForPlugin:@"FLTFirebaseFirestorePlugin"]];
   [FLTFirebaseAuthPlugin registerWithRegistrar:[registry registrarForPlugin:@"FLTFirebaseAuthPlugin"]];
   [FLTFirebaseCorePlugin registerWithRegistrar:[registry registrarForPlugin:@"FLTFirebaseCorePlugin"]];
-  [FLTFirebaseDynamicLinksPlugin registerWithRegistrar:[registry registrarForPlugin:@"FLTFirebaseDynamicLinksPlugin"]];
   [FLTFirebaseStoragePlugin registerWithRegistrar:[registry registrarForPlugin:@"FLTFirebaseStoragePlugin"]];
   [FLTGoogleMobileAdsPlugin registerWithRegistrar:[registry registrarForPlugin:@"FLTGoogleMobileAdsPlugin"]];
   [FLTGoogleSignInPlugin registerWithRegistrar:[registry registrarForPlugin:@"FLTGoogleSignInPlugin"]];
   [FLTImagePickerPlugin registerWithRegistrar:[registry registrarForPlugin:@"FLTImagePickerPlugin"]];
   [PathProviderPlugin registerWithRegistrar:[registry registrarForPlugin:@"PathProviderPlugin"]];
+  [PermissionHandlerPlugin registerWithRegistrar:[registry registrarForPlugin:@"PermissionHandlerPlugin"]];
   [PurchasesFlutterPlugin registerWithRegistrar:[registry registrarForPlugin:@"PurchasesFlutterPlugin"]];
+  [RecordPlugin registerWithRegistrar:[registry registrarForPlugin:@"RecordPlugin"]];
   [SharedPreferencesPlugin registerWithRegistrar:[registry registrarForPlugin:@"SharedPreferencesPlugin"]];
   [SignInWithApplePlugin registerWithRegistrar:[registry registrarForPlugin:@"SignInWithApplePlugin"]];
   [SqflitePlugin registerWithRegistrar:[registry registrarForPlugin:@"SqflitePlugin"]];
