@@ -12,8 +12,8 @@ import 'services/ads_service.dart';
 import 'firebase_options.dart';
 
 // Screens
-import 'screens/home_screen.dart';
-import 'config/theme.dart';
+import 'screens/enhanced_home_screen.dart';
+import 'config/enhanced_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -79,10 +79,10 @@ class CrystalGrimoireApp extends StatelessWidget {
       child: MaterialApp(
         title: 'Crystal Grimoire',
         debugShowCheckedModeBanner: false,
-        theme: ThemeData.dark(),
-        home: const HomeScreen(),
+        theme: CrystalGrimoireTheme.theme,
+        home: const EnhancedHomeScreen(),
         routes: {
-          '/home': (context) => const HomeScreen(),
+          '/home': (context) => const EnhancedHomeScreen(),
         },
       ),
     );
