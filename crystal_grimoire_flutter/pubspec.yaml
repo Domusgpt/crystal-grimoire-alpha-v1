@@ -32,6 +32,9 @@ dependencies:
   shimmer: ^3.0.0
   lottie: ^2.7.0
   
+  # Media
+  video_player: ^2.8.1
+  
   # Utilities
   uuid: ^4.1.0
   crypto: ^3.0.3
@@ -73,8 +76,10 @@ flutter:
   
   assets:
     - assets/images/
+    - assets/images/crystals/
     - assets/animations/
     - assets/icons/
+    - assets/videos/
   
   # fonts:
   #   - family: Mystical

@@ -14,6 +14,8 @@ import 'metaphysical_guidance_screen.dart';
 import 'account_screen.dart';
 import 'auth_account_screen.dart';
 import 'llm_lab_screen.dart';
+import 'crystal_gallery_screen.dart';
+import '../widgets/daily_crystal_card.dart';
 
 class EnhancedHomeScreen extends StatefulWidget {
   const EnhancedHomeScreen({Key? key}) : super(key: key);
@@ -142,6 +144,15 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen>
                         
                         const SizedBox(height: 24),
                         
+                        // Daily Crystal Card
+                        MysticalAnimations.slideIn(
+                          direction: SlideDirection.left,
+                          delay: const Duration(milliseconds: 300),
+                          child: const DailyCrystalCard(),
+                        ),
+                        
+                        const SizedBox(height: 16),
+                        
                         // Usage stats
                         MysticalAnimations.slideIn(
                           direction: SlideDirection.left,
@@ -261,36 +272,78 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen>
   }
 
   Widget _buildMainActionsGrid() {
-    return GridView.count(
-      crossAxisCount: 2,
-      crossAxisSpacing: 16,
-      mainAxisSpacing: 16,
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      childAspectRatio: 1.1,
+    return Column(
       children: [
-        // Crystal Identification
-        _buildActionCard(
-          title: 'Identify Crystal',
-          subtitle: 'Point & discover',
-          icon: Icons.camera_alt_outlined,
-          gradient: CrystalGrimoireTheme.primaryButtonGradient,
-          onTap: () => _navigateToCamera(),
-          isEnabled: _dailyIdentifications < _dailyLimit,
+        GridView.count(
+          crossAxisCount: 2,
+          crossAxisSpacing: 16,
+          mainAxisSpacing: 16,
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          childAspectRatio: 1.1,
+          children: [
+            // Crystal Identification
+            _buildActionCard(
+              title: 'Identify Crystal',
+              subtitle: 'Point & discover',
+              icon: Icons.camera_alt_outlined,
+              gradient: CrystalGrimoireTheme.primaryButtonGradient,
+              onTap: () => _navigateToCamera(),
+              isEnabled: _dailyIdentifications < _dailyLimit,
+            ),
+            
+            // Crystal Gallery - NEW!
+            _buildActionCard(
+              title: 'Crystal Gallery',
+              subtitle: 'Explore collection',
+              icon: Icons.diamond_outlined,
+              gradient: const LinearGradient(
+                colors: [
+                  CrystalGrimoireTheme.amethyst,
+                  CrystalGrimoireTheme.crystalRose,
+                ],
+              ),
+              onTap: () => _navigateToCrystalGallery(),
+            ),
+          ],
         ),
-        
-        // Journal
-        _buildActionCard(
-          title: 'Spiritual Journal',
-          subtitle: 'Document journey',
-          icon: Icons.book_outlined,
-          gradient: const LinearGradient(
-            colors: [
-              CrystalGrimoireTheme.etherealBlue,
-              CrystalGrimoireTheme.mysticPurple,
-            ],
-          ),
-          onTap: () => _navigateToJournal(),
+        const SizedBox(height: 16),
+        GridView.count(
+          crossAxisCount: 2,
+          crossAxisSpacing: 16,
+          mainAxisSpacing: 16,
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          childAspectRatio: 1.1,
+          children: [
+            // Journal
+            _buildActionCard(
+              title: 'Spiritual Journal',
+              subtitle: 'Document journey',
+              icon: Icons.book_outlined,
+              gradient: const LinearGradient(
+                colors: [
+                  CrystalGrimoireTheme.etherealBlue,
+                  CrystalGrimoireTheme.mysticPurple,
+                ],
+              ),
+              onTap: () => _navigateToJournal(),
+            ),
+            
+            // Quick Guide
+            _buildActionCard(
+              title: 'Quick Guide',
+              subtitle: 'Crystal meanings',
+              icon: Icons.auto_stories_outlined,
+              gradient: const LinearGradient(
+                colors: [
+                  CrystalGrimoireTheme.successGreen,
+                  CrystalGrimoireTheme.etherealBlue,
+                ],
+              ),
+              onTap: () => _showQuickGuide(),
+            ),
+          ],
         ),
       ],
     );
@@ -553,6 +606,163 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen>
             child: child,
           );
         },
+      ),
+    );
+  }
+
+  void _navigateToCrystalGallery() {
+    Navigator.push(
+      context,
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) => const CrystalGalleryScreen(),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return FadeTransition(
+            opacity: animation,
+            child: ScaleTransition(
+              scale: Tween<double>(
+                begin: 0.8,
+                end: 1.0,
+              ).animate(CurvedAnimation(
+                parent: animation,
+                curve: Curves.easeOutCubic,
+              )),
+              child: child,
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  void _showQuickGuide() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        height: MediaQuery.of(context).size.height * 0.8,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              CrystalGrimoireTheme.royalPurple,
+              CrystalGrimoireTheme.deepSpace,
+            ],
+          ),
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(24),
+            topRight: Radius.circular(24),
+          ),
+        ),
+        child: Column(
+          children: [
+            Container(
+              width: 50,
+              height: 5,
+              margin: const EdgeInsets.only(top: 12),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.3),
+                borderRadius: BorderRadius.circular(3),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: Text(
+                'Crystal Quick Guide',
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                children: [
+                  _buildQuickGuideSection(
+                    'Protection Crystals',
+                    'Black Tourmaline, Obsidian, Hematite',
+                    Icons.shield_outlined,
+                    Colors.grey[800]!,
+                  ),
+                  _buildQuickGuideSection(
+                    'Love & Relationships',
+                    'Rose Quartz, Rhodonite, Garnet',
+                    Icons.favorite_outline,
+                    CrystalGrimoireTheme.crystalRose,
+                  ),
+                  _buildQuickGuideSection(
+                    'Abundance & Success',
+                    'Citrine, Pyrite, Green Aventurine',
+                    Icons.star_outline,
+                    CrystalGrimoireTheme.celestialGold,
+                  ),
+                  _buildQuickGuideSection(
+                    'Intuition & Spirituality',
+                    'Amethyst, Labradorite, Moonstone',
+                    Icons.visibility_outlined,
+                    CrystalGrimoireTheme.amethyst,
+                  ),
+                  _buildQuickGuideSection(
+                    'Healing & Balance',
+                    'Clear Quartz, Selenite, Jade',
+                    Icons.spa_outlined,
+                    CrystalGrimoireTheme.successGreen,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildQuickGuideSection(String title, String crystals, IconData icon, Color color) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: color.withOpacity(0.4)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.3),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: Colors.white, size: 24),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  crystals,
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.8),
+                    fontSize: 14,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

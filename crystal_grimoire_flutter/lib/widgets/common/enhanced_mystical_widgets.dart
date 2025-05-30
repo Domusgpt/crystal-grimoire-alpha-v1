@@ -12,6 +12,7 @@ class EnhancedMysticalCard extends StatelessWidget {
   final Color? glowColor;
   final VoidCallback? onTap;
   final bool enableHover;
+  final Gradient? gradient;
 
   const EnhancedMysticalCard({
     Key? key,
@@ -23,6 +24,7 @@ class EnhancedMysticalCard extends StatelessWidget {
     this.glowColor,
     this.onTap,
     this.enableHover = true,
+    this.gradient,
   }) : super(key: key);
 
   @override
@@ -30,12 +32,21 @@ class EnhancedMysticalCard extends StatelessWidget {
     Widget card = Container(
       margin: margin ?? const EdgeInsets.all(8),
       padding: padding ?? const EdgeInsets.all(20),
-      decoration: isPremium
-          ? CrystalGrimoireTheme.premiumCard()
-          : CrystalGrimoireTheme.glassmorphismCard(
-              isGlowing: isGlowing,
-              glowColor: glowColor,
-            ),
+      decoration: gradient != null
+          ? BoxDecoration(
+              gradient: gradient,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: CrystalGrimoireTheme.stardustSilver.withOpacity(0.2),
+                width: 1,
+              ),
+            )
+          : isPremium
+              ? CrystalGrimoireTheme.premiumCard()
+              : CrystalGrimoireTheme.glassmorphismCard(
+                  isGlowing: isGlowing,
+                  glowColor: glowColor,
+                ),
       child: child,
     );
 
