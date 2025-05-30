@@ -24,6 +24,8 @@ void main() async {
       await Firebase.initializeApp(
         options: DefaultFirebaseOptions.currentPlatform,
       );
+    } else {
+      print('Firebase disabled for web demo');
     }
   } catch (e) {
     print('Firebase initialization failed: $e');

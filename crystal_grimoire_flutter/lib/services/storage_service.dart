@@ -75,6 +75,11 @@ class StorageService {
     stats['identifications'] = (stats['identifications'] as int) + 1;
     await saveUsageStats(stats);
   }
+
+  static Future<int> getDailyIdentifications() async {
+    final stats = await getUsageStats();
+    return stats['identifications'] as int? ?? 0;
+  }
   
   static Future<void> resetMonthlyUsage() async {
     await saveUsageStats({

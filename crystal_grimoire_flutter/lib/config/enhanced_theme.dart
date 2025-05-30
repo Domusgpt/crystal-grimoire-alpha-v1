@@ -425,7 +425,7 @@ class CrystalGrimoireTheme {
       ),
       
       // Dialog theme
-      dialogTheme: DialogTheme(
+      dialogTheme: DialogThemeData(
         backgroundColor: midnightPurple,
         elevation: 24,
         shape: RoundedRectangleBorder(

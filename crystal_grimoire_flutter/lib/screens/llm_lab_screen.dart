@@ -377,7 +377,7 @@ class _LLMLabScreenState extends State<LLMLabScreen> with TickerProviderStateMix
                 children: [
                   Expanded(
                     child: MysticalButton(
-                      onPressed: _isLoading ? null : _runTest,
+                      onPressed: _isLoading ? () {} : () => _runTest(),
                       label: _isLoading ? 'Testing...' : 'Run Test',
                       icon: Icons.play_arrow,
                       isPrimary: true,

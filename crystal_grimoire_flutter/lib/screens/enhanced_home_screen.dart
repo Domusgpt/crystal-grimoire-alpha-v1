@@ -193,7 +193,7 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen>
           Text(
             'Discover the mystical properties of crystals through AI-powered identification and spiritual guidance.',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              opacity: 0.8,
+              color: CrystalGrimoireTheme.stardustSilver.withOpacity(0.8),
             ),
           ),
         ],
