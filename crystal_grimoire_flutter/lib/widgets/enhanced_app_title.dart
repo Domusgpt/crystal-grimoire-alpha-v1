@@ -29,15 +29,15 @@ class _EnhancedAppTitleState extends State<EnhancedAppTitle>
   void initState() {
     super.initState();
     
-    // Sparkle animation - faster and more dramatic
+    // Sparkle animation - optimized for performance
     _sparkleController = AnimationController(
-      duration: const Duration(seconds: 2),
+      duration: const Duration(seconds: 4),
       vsync: this,
     )..repeat();
     
-    // Color shift animation - more dramatic color changes
+    // Color shift animation - smoother curves
     _colorController = AnimationController(
-      duration: const Duration(seconds: 3),
+      duration: const Duration(seconds: 5),
       vsync: this,
     )..repeat(reverse: true);
     
@@ -46,21 +46,21 @@ class _EnhancedAppTitleState extends State<EnhancedAppTitle>
       end: CrystalGrimoireTheme.celestialGold,
     ).animate(CurvedAnimation(
       parent: _colorController,
-      curve: Curves.elasticInOut,
+      curve: Curves.easeInOut,
     ));
     
-    // Pulse animation - more dramatic scaling
+    // Pulse animation - gentler scaling
     _pulseController = AnimationController(
-      duration: const Duration(milliseconds: 1500),
+      duration: const Duration(milliseconds: 2500),
       vsync: this,
     )..repeat(reverse: true);
     
     _pulseAnimation = Tween<double>(
-      begin: 0.9,
-      end: 1.2,
+      begin: 0.95,
+      end: 1.05,
     ).animate(CurvedAnimation(
       parent: _pulseController,
-      curve: Curves.elasticInOut,
+      curve: Curves.easeInOut,
     ));
   }
 

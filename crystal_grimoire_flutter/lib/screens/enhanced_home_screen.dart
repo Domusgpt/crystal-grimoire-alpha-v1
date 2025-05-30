@@ -45,7 +45,7 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen>
   void initState() {
     super.initState();
     _particleController = AnimationController(
-      duration: const Duration(seconds: 20),
+      duration: const Duration(seconds: 30),
       vsync: this,
     );
     _particleController.repeat();
@@ -97,7 +97,7 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen>
             // Floating particles background
             const Positioned.fill(
               child: FloatingParticles(
-                particleCount: 30,
+                particleCount: 15,
                 particleColor: CrystalGrimoireTheme.stardustSilver,
               ),
             ),
@@ -506,6 +506,22 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen>
   Widget _buildMainActionsGrid() {
     return Column(
       children: [
+        // Crystal Gallery - Made bigger (full width)
+        _buildActionCard(
+          title: 'Crystal Gallery',
+          subtitle: 'Explore our comprehensive collection of crystals with detailed properties, metaphysical meanings, and spiritual guidance',
+          icon: Icons.diamond_outlined,
+          gradient: const LinearGradient(
+            colors: [
+              CrystalGrimoireTheme.amethyst,
+              CrystalGrimoireTheme.crystalRose,
+            ],
+          ),
+          onTap: () => _navigateToCrystalGallery(),
+        ),
+        
+        const SizedBox(height: 16),
+        
         GridView.count(
           crossAxisCount: 2,
           crossAxisSpacing: 16,
@@ -517,25 +533,25 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen>
             // Crystal Identification
             _buildActionCard(
               title: 'Identify Crystal',
-              subtitle: 'Point & discover',
+              subtitle: 'Point camera & discover mystical properties instantly',
               icon: Icons.camera_alt_outlined,
               gradient: CrystalGrimoireTheme.primaryButtonGradient,
               onTap: () => _navigateToCamera(),
               isEnabled: _dailyIdentifications < _dailyLimit,
             ),
             
-            // Crystal Gallery - NEW!
+            // Spiritual Journal
             _buildActionCard(
-              title: 'Crystal Gallery',
-              subtitle: 'Explore collection',
-              icon: Icons.diamond_outlined,
+              title: 'Spiritual Journal',
+              subtitle: 'Document your crystal journey & insights',
+              icon: Icons.book_outlined,
               gradient: const LinearGradient(
                 colors: [
-                  CrystalGrimoireTheme.amethyst,
-                  CrystalGrimoireTheme.crystalRose,
+                  CrystalGrimoireTheme.etherealBlue,
+                  CrystalGrimoireTheme.mysticPurple,
                 ],
               ),
-              onTap: () => _navigateToCrystalGallery(),
+              onTap: () => _navigateToJournal(),
             ),
           ],
         ),
@@ -548,24 +564,10 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen>
           physics: const NeverScrollableScrollPhysics(),
           childAspectRatio: 1.1,
           children: [
-            // Journal
-            _buildActionCard(
-              title: 'Spiritual Journal',
-              subtitle: 'Document journey',
-              icon: Icons.book_outlined,
-              gradient: const LinearGradient(
-                colors: [
-                  CrystalGrimoireTheme.etherealBlue,
-                  CrystalGrimoireTheme.mysticPurple,
-                ],
-              ),
-              onTap: () => _navigateToJournal(),
-            ),
-            
             // Quick Guide
             _buildActionCard(
               title: 'Quick Guide',
-              subtitle: 'Crystal meanings',
+              subtitle: 'Essential crystal meanings & usage tips',
               icon: Icons.auto_stories_outlined,
               gradient: const LinearGradient(
                 colors: [
@@ -574,6 +576,20 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen>
                 ],
               ),
               onTap: () => _showQuickGuide(),
+            ),
+            
+            // Settings & Account
+            _buildActionCard(
+              title: 'Account',
+              subtitle: 'Subscription, settings & preferences',
+              icon: Icons.person_outline,
+              gradient: const LinearGradient(
+                colors: [
+                  CrystalGrimoireTheme.moonlightSilver,
+                  CrystalGrimoireTheme.stardustSilver,
+                ],
+              ),
+              onTap: () => _navigateToAccount(),
             ),
           ],
         ),
@@ -596,7 +612,7 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen>
           requiredTier: 'premium',
           child: _buildActionCard(
             title: 'My Collection',
-            subtitle: 'Manage crystals',
+            subtitle: 'Organize & track your crystal inventory with AI insights',
             icon: Icons.inventory_2_outlined,
             gradient: CrystalGrimoireTheme.premiumGradient,
             onTap: () => _navigateToCollection(),
@@ -610,7 +626,7 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen>
           requiredTier: 'pro',
           child: _buildActionCard(
             title: 'AI Guidance',
-            subtitle: 'Spiritual wisdom',
+            subtitle: 'Personalized spiritual wisdom & crystal recommendations',
             icon: Icons.psychology_outlined,
             gradient: const LinearGradient(
               colors: [
@@ -651,7 +667,7 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen>
             // Crystal AI Oracle
             _buildActionCard(
               title: 'AI Oracle',
-              subtitle: 'Crystal readings',
+              subtitle: 'Advanced crystal readings & divine guidance',
               icon: Icons.psychology_alt_outlined,
               gradient: const LinearGradient(
                 colors: [
@@ -666,7 +682,7 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen>
             // Moon Ritual Planner
             _buildActionCard(
               title: 'Moon Rituals',
-              subtitle: 'Lunar magic',
+              subtitle: 'Lunar-powered crystal ceremonies & intentions',
               icon: Icons.brightness_3,
               gradient: const LinearGradient(
                 colors: [
@@ -694,7 +710,7 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen>
             // Dream Journal
             _buildActionCard(
               title: 'Dream Journal',
-              subtitle: 'Crystal dreams',
+              subtitle: 'AI-powered dream analysis with crystal insights',
               icon: Icons.nights_stay_outlined,
               gradient: const LinearGradient(
                 colors: [
@@ -709,7 +725,7 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen>
             // Energy Healing
             _buildActionCard(
               title: 'Energy Healing',
-              subtitle: 'Chakra balance',
+              subtitle: 'Chakra balancing with crystal frequency therapy',
               icon: Icons.healing_outlined,
               gradient: const LinearGradient(
                 colors: [
@@ -737,7 +753,7 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen>
             // Astro Crystal Matcher
             _buildActionCard(
               title: 'Astro Crystals',
-              subtitle: 'Birth chart gems',
+              subtitle: 'Birth chart-aligned crystal recommendations',
               icon: Icons.star_outline,
               gradient: const LinearGradient(
                 colors: [
@@ -752,7 +768,7 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen>
             // Meditation Sound Bath
             _buildActionCard(
               title: 'Sound Bath',
-              subtitle: 'Crystal frequencies',
+              subtitle: 'Healing frequencies & crystal-tuned meditations',
               icon: Icons.music_note_outlined,
               gradient: const LinearGradient(
                 colors: [

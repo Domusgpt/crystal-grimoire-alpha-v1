@@ -30,29 +30,29 @@ class _CustomCrystalLogoState extends State<CustomCrystalLogo>
     super.initState();
     
     if (widget.animate) {
-      // Gentle rotation
+      // Gentle rotation - slower for performance
       _rotationController = AnimationController(
-        duration: const Duration(seconds: 8),
+        duration: const Duration(seconds: 15),
         vsync: this,
       )..repeat();
       
-      // Pulse animation
+      // Pulse animation - gentler
       _pulseController = AnimationController(
-        duration: const Duration(seconds: 2),
+        duration: const Duration(seconds: 3),
         vsync: this,
       )..repeat(reverse: true);
       
       _pulseAnimation = Tween<double>(
-        begin: 0.95,
-        end: 1.1,
+        begin: 0.98,
+        end: 1.02,
       ).animate(CurvedAnimation(
         parent: _pulseController,
         curve: Curves.easeInOut,
       ));
       
-      // Color cycling animation
+      // Color cycling animation - slower
       _colorController = AnimationController(
-        duration: const Duration(seconds: 4),
+        duration: const Duration(seconds: 6),
         vsync: this,
       )..repeat(reverse: true);
       
